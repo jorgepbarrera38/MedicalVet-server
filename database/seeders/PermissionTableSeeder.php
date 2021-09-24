@@ -215,7 +215,7 @@ class PermissionTableSeeder extends Seeder
         ]);
         Permission::create([
             'name' => 'clinic-histories.show-vaccine',
-            'description' => 'Consultar informe de vacunación'
+            'description' => 'Vacunación y desparasitación'
         ]);
         Permission::create([
             'name' => 'clinic-histories.show-product-and-services-applied',
