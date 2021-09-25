@@ -39,7 +39,7 @@ class DewormingController extends Controller
             'unity_id' => 'required|exists:unities,id',
             'next_date' => 'required|date|after_or_equal:today',
         ], [
-            'next_date.after_or_equal' => 'El campo Próxima vacuna debe ser igual o superior a la fecha actual'
+            'next_date.after_or_equal' => 'El campo Próxima desparasitación debe ser igual o superior a la fecha actual'
         ], [
             'pet_id' => 'Mascota',
             'product_id' => 'Desparasitante',
@@ -84,6 +84,20 @@ class DewormingController extends Controller
      */
     public function destroy(Deworming $deworming)
     {
-        //
+        //Para eliminar vacuna registrada desde HC
+        if ($deworming->clinic_history_id) {
+            if (auth()->user()->id != $deworming->clinicHistory->user_id) {
+                return response()->json(['message' => 'Forbidden action'], 403);
+            }
+            $deworming->delete();
+            return response()->json(['message' => 'Deworming deleted'], 200);
+        }
+
+        //Para eliminar vacuna registrada desde Vacunación y desparasitación
+        if (auth()->user()->id != $deworming->user_id) {
+            return response()->json(['message' => 'Forbidden action'], 403);
+        }
+        $deworming->delete();
+        return response()->json(['message' => 'Deworming deleted'], 200);
     }
 }

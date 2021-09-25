@@ -86,13 +86,15 @@ Route::middleware('auth')->group(function () {
     Route::get('informed-consents/get-informed-consents-templates', 'InformedConsentController@getInformedConsentTemplates');
     Route::get('informed-consents/{pet}/{informedConsentTemplate}', 'InformedConsentController@getInformedConsent');
 
-    //Registrar vacunas por fuera de historia clínica
+    //Registrar y eliminar vacunas por fuera de historia clínica
     Route::get('vaccines', 'VaccineController@index');    
     Route::post('vaccines', 'VaccineController@store');
+    Route::delete('vaccines/{vaccine}', 'VaccineController@destroy');
 
-    //Registrar desparasitaciónes por fuera de historia clínica
+    //Registrar y eliminar desparasitaciónes por fuera de historia clínica
     Route::get('dewormings', 'DewormingController@index');    
     Route::post('dewormings', 'DewormingController@store');
+    Route::delete('dewormings/{deworming}', 'DewormingController@destroy');
 });
 
 Route::group([

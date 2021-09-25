@@ -96,6 +96,20 @@ class VaccineController extends Controller
      */
     public function destroy(Vaccine $vaccine)
     {
-        //
+        //Para eliminar vacuna registrada desde HC
+        if ($vaccine->clinic_history_id) {
+            if (auth()->user()->id != $vaccine->clinicHistory->user_id) {
+                return response()->json(['message' => 'Forbidden action'], 403);
+            }
+            $vaccine->delete();
+            return response()->json(['message' => 'Vaccine deleted'], 200);
+        }
+
+        //Para eliminar vacuna registrada desde Vacunación y desparasitación
+        if (auth()->user()->id != $vaccine->user_id) {
+            return response()->json(['message' => 'Forbidden action'], 403);
+        }
+        $vaccine->delete();
+        return response()->json(['message' => 'Vaccine deleted'], 200);
     }
 }
