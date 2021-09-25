@@ -10,6 +10,7 @@ class Deworming extends Model
     use HasFactory;
 
     protected $fillable = [
+        'pet_id',
         'product_id',
         'dose',
         'unity_id',
@@ -26,5 +27,9 @@ class Deworming extends Model
 
     public function clinicHistory () {
         return $this->belongsTo('App\Models\ClinicHistory');
+    }
+
+    public function user () {
+        return $this->belongsTo('App\Models\User');
     }
 }

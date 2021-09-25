@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Product;
 use App\Models\Vaccine;
 use Illuminate\Http\Request;
 
@@ -14,7 +15,8 @@ class VaccineController extends Controller
      */
     public function index()
     {
-        //
+        $vaccines = Product::where('vaccine', true)->orderBy('name')->get(['id', 'name']);
+        return $vaccines;
     }
 
     /**
@@ -35,7 +37,21 @@ class VaccineController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $data = $request->validate([
+            'pet_id' => 'required|exists:pets,id',
+            'product_id' => 'required|exists:products,id',
+            'next_date' => 'required|date|after_or_equal:today',
+        ], [
+            'next_date.after_or_equal' => 'El campo Próxima vacuna debe ser igual o superior a la fecha actual'
+        ], [
+            'pet_id' => 'Mascota',
+            'product_id' => 'Vacuna',
+            'next_date' => 'Próxima vacuna'
+        ]);
+
+        auth()->user()->vaccines()->create($data);
+
+        return response()->json(['message' => 'Vaccine registered'], 201);
     }
 
     /**

@@ -349,8 +349,9 @@ class ClinicHistoryController extends Controller
 
             //Registro de desparacitasiónes
             if ($consultationPurposes->dewormings) {
-                $dewormings = collect($request->dewormings)->map(function ($item) {
+                $dewormings = collect($request->dewormings)->map(function ($item) use($clinicHistory) {
                     return [
+                            'pet_id' => $clinicHistory->pet_id,
                             'product_id' => $item['product_id'],
                             'dose' => $item['dose'],
                             'unity_id' => $item['unity_id'],
