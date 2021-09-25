@@ -162,6 +162,9 @@ class ClinicHistoryController extends Controller
             'physiologicalConstants.breathing_frequency' => ['nullable', 'numeric', 'min:1', 'max:500', Rule::requiredIf($consultationPurposes->physiological_constants)],
 
             
+            'reviewBySystems.respiratorySystem.state' => ['nullable', Rule::in(['Normal', 'Anormal']), Rule::requiredIf($consultationPurposes->review_by_systems)],
+            'reviewBySystems.respiratorySystem.observations' => 'nullable|max:1000|required_if:reviewBySystems.respiratorySystem.state,Anormal',
+
             'reviewBySystems.tegumentarySystem.state' => ['nullable', Rule::in(['Normal', 'Anormal']), Rule::requiredIf($consultationPurposes->review_by_systems)],
             'reviewBySystems.tegumentarySystem.observations' => 'nullable|max:1000|required_if:reviewBySystems.tegumentarySystem.state,Anormal',
 
@@ -220,6 +223,10 @@ class ClinicHistoryController extends Controller
         ], [
             'pet_id.required' => 'Debe seleccionar una mascota',
             'pet_id.exists' => 'La mascota seleccionada no existe',
+
+            'reviewBySystems.respiratorySystem.state.required' => 'Seleccione una opción',
+            'reviewBySystems.respiratorySystem.observations.required_if' => 'Ingrese las observaciónes',
+            'reviewBySystems.respiratorySystem.observations.max' => 'Las observaciónes no debe superar los 1000 caracteres',
 
             'reviewBySystems.tegumentarySystem.state.required' => 'Seleccione una opción',
             'reviewBySystems.tegumentarySystem.observations.required_if' => 'Ingrese las observaciónes',
@@ -295,6 +302,8 @@ class ClinicHistoryController extends Controller
             //Registro de revisión por sistemas
             if ($consultationPurposes->review_by_systems) {
                 $clinicHistory->clinicHistoryReviewBySystem()->create([
+                    'respiratory_system_state' => $data['reviewBySystems']['respiratorySystem']['state'],
+                    'respiratory_system_observations' => $data['reviewBySystems']['respiratorySystem']['observations'],
                     'tegumentary_system_state' => $data['reviewBySystems']['tegumentarySystem']['state'],
                     'tegumentary_system_observations' => $data['reviewBySystems']['tegumentarySystem']['observations'],
                     'nervous_system_state' => $data['reviewBySystems']['nervousSystem']['state'],

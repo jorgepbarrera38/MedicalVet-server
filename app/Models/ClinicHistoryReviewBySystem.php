@@ -10,6 +10,8 @@ class ClinicHistoryReviewBySystem extends Model
     use HasFactory;
 
     protected $fillable = [
+        'respiratory_system_state',
+        'respiratory_system_observations',
         'tegumentary_system_state',
         'tegumentary_system_observations',
         'nervous_system_state',

@@ -128,6 +128,13 @@
             <div>
                 <center><h4>REVISIÓN POR SISTEMAS</h4></center>
                 <div align="justify">
+                    <strong>Sistema respiratorio</strong> <br><br>
+                    {{ $clinicHistory->clinicHistoryReviewBySystem->respiratory_system_state }} <br><br>
+                    @if ($clinicHistory->clinicHistoryReviewBySystem->respiratory_system_observations)
+                        {{ $clinicHistory->clinicHistoryReviewBySystem->respiratory_system_observations }}<br><br>
+                    @endif
+                </div>
+                <div align="justify">
                     <strong>Sistema tegumentario</strong> <br><br>
                     {{ $clinicHistory->clinicHistoryReviewBySystem->tegumentary_system_state }} <br><br>
                     @if ($clinicHistory->clinicHistoryReviewBySystem->tegumentary_system_observations)
