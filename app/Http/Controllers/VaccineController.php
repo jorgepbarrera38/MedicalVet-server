@@ -85,7 +85,31 @@ class VaccineController extends Controller
      */
     public function update(Request $request, Vaccine $vaccine)
     {
-        //
+        $data = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'next_date' => 'required|date|after_or_equal:today',
+        ], [
+            'next_date.after_or_equal' => 'El campo Próxima vacuna debe ser igual o superior a la fecha actual'
+        ], [
+            'product_id' => 'Vacuna',
+            'next_date' => 'Próxima vacuna'
+        ]);
+
+        //Para editar vacuna registrada desde HC
+        if ($vaccine->clinic_history_id) {
+            if (auth()->user()->id != $vaccine->clinicHistory->user_id) {
+                return response()->json(['message' => 'Forbidden action'], 403);
+            }
+        } else {
+            //Para editar vacuna registrada desde Vacunación y desparasitación
+            if (auth()->user()->id != $vaccine->user_id) {
+                return response()->json(['message' => 'Forbidden action'], 403);
+            }
+        }
+
+
+        $vaccine->update($data);
+        return response()->json(['message' => 'Vaccine updated'], 200);
     }
 
     /**

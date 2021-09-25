@@ -73,7 +73,34 @@ class DewormingController extends Controller
      */
     public function update(Request $request, Deworming $deworming)
     {
-        //
+        $data = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'dose' => 'required|numeric|min:0.0001|max:1000',
+            'unity_id' => 'required|exists:unities,id',
+            'next_date' => 'required|date|after_or_equal:today',
+        ], [
+            'next_date.after_or_equal' => 'El campo Próxima vacuna debe ser igual o superior a la fecha actual'
+        ], [
+            'product_id' => 'Vacuna',
+            'next_date' => 'Próxima vacuna',
+            'dose' => 'Dosis',
+            'unity_id' => 'Unidad'
+        ]);
+
+        //Para editar vacuna registrada desde HC
+        if ($deworming->clinic_history_id) {
+            if (auth()->user()->id != $deworming->clinicHistory->user_id) {
+                return response()->json(['message' => 'Forbidden action'], 403);
+            }
+        } else {
+            //Para editar vacuna registrada desde Vacunación y desparasitación
+            if (auth()->user()->id != $deworming->user_id) {
+                return response()->json(['message' => 'Forbidden action'], 403);
+            }
+        }
+
+        $deworming->update($data);
+        return response()->json(['message' => 'Deworming updated'], 200);
     }
 
     /**

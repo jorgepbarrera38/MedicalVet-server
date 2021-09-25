@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\Pet;
+use App\Models\Unity;
 use App\Models\Product;
 use App\Models\ClinicHistoryPrescription;
 use App\Models\Vaccine;
@@ -115,11 +116,18 @@ class ReportController extends Controller
                         ->with('unity:id,description')
                         ->with('clinicHistory.user:id,identification,username,names,surnames')
                         ->orderBy('id')
-                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'unity_id', 'dose', 'created_at', 'user_id']);                        
+                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'unity_id', 'dose', 'created_at', 'user_id']);     
+                        
+        $allVaccines = Product::where('vaccine', true)->orderBy('name')->get(['id', 'name']);
+        $allDewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);
+        $allUnities = Unity::orderBy('description')->get(['id', 'description']);
                     
         return [
             'vaccines' => $vaccines,
-            'dewormings' => $dewormings
+            'dewormings' => $dewormings,
+            'allVaccines' => $allVaccines,
+            'allDewormings' => $allDewormings,
+            'allUnities' => $allUnities,
         ];
     }
 

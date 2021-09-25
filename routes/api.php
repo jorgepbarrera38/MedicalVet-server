@@ -89,11 +89,13 @@ Route::middleware('auth')->group(function () {
     //Registrar y eliminar vacunas por fuera de historia clínica
     Route::get('vaccines', 'VaccineController@index');    
     Route::post('vaccines', 'VaccineController@store');
+    Route::put('vaccines/{vaccine}', 'VaccineController@update');
     Route::delete('vaccines/{vaccine}', 'VaccineController@destroy');
 
     //Registrar y eliminar desparasitaciónes por fuera de historia clínica
     Route::get('dewormings', 'DewormingController@index');    
     Route::post('dewormings', 'DewormingController@store');
+    Route::put('dewormings/{deworming}', 'DewormingController@update');
     Route::delete('dewormings/{deworming}', 'DewormingController@destroy');
 });
 
