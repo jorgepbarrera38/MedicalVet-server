@@ -350,6 +350,7 @@ class ClinicHistoryController extends Controller
                             'pet_id' => $clinicHistory->pet_id,
                             'product_id' => $item['product_id'],
                             'next_date' => $item['next_date'],
+                            'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
         
@@ -365,6 +366,7 @@ class ClinicHistoryController extends Controller
                             'dose' => $item['dose'],
                             'unity_id' => $item['unity_id'],
                             'next_date' => $item['next_date'],
+                            'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
         

@@ -14,7 +14,8 @@ class Deworming extends Model
         'product_id',
         'dose',
         'unity_id',
-        'next_date'
+        'next_date',
+        'user_id'
     ];
 
     public function product () {

@@ -12,7 +12,8 @@ class Vaccine extends Model
     protected $fillable = [
         'pet_id',
         'product_id',
-        'next_date'
+        'next_date',
+        'user_id'
     ];
 
     public function product () {
