@@ -30,6 +30,10 @@ class PetController extends Controller
                     ->paginate(7);
     }
 
+    public function getQuantityPetsCreated () {
+        return Pet::count();
+    }
+
     /**
      * Store a newly created resource in storage.
      *

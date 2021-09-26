@@ -13,6 +13,7 @@ Route::middleware('auth')->group(function () {
     Route::apiResource('cities', 'CityController');
     Route::apiResource('unities', 'UnityController');
     
+    Route::get('pets/get-quantity-pets-created', 'PetController@getQuantityPetsCreated');
     Route::get('pets/get-data-to-create-pet', 'PetController@getDataToCreatePet');
     Route::apiResource('pets', 'PetController');
     
