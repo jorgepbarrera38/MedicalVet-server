@@ -3,3 +3,4 @@ vendor
 .env
 storage/app
 public/images
+public/company
