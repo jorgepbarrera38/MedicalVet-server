@@ -15,7 +15,7 @@ class PermissionTableSeeder extends Seeder
     public function run()
     {
         //Mascotas
-        Permission::create([
+        /*Permission::create([
             'name' => 'pets.index',
             'description' => 'Listar mascotas'
         ]);
@@ -412,6 +412,30 @@ class PermissionTableSeeder extends Seeder
         Permission::create([
             'name' => 'informed-consent-templates.customize',
             'description' => 'Personalizar plantillas de consentimiento informado'
+        ]);*/
+        Permission::create([
+            'name' => 'vaccines.store',
+            'description' => 'Registrar vacunas aplicadas'
+        ]);
+        Permission::create([
+            'name' => 'vaccines.update',
+            'description' => 'Editar vacunas aplicadas'
+        ]);
+        Permission::create([
+            'name' => 'vaccines.destroy',
+            'description' => ' Eliminar vacunas aplicadas'
+        ]);
+        Permission::create([
+            'name' => 'dewormings.store',
+            'description' => 'Registrar desparasitaciones realizadas'
+        ]);
+        Permission::create([
+            'name' => 'dewormings.update',
+            'description' => 'Editar desparasitaciones realizadas'
+        ]);
+        Permission::create([
+            'name' => 'dewormings.destroy',
+            'description' => ' Eliminar desparasitaciones realizadas'
         ]);
     }
 }

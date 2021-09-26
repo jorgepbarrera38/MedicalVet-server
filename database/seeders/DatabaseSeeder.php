@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
         
         //Usuarios
         
-        $user = \App\Models\User::create([
+        /*$user = \App\Models\User::create([
             'username' => 'admin',
             'identification' => '1',
             'names' => 'Administrador',
@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             
 
 
-        $user->permissions()->attach([71,72,73,74,75]);
+        $user->permissions()->attach([71,72,73,74,75]);*/
         
         /*
         \App\Models\Owner::factory()->count(400)->create();

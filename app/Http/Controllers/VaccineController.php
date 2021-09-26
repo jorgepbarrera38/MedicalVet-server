@@ -8,6 +8,11 @@ use Illuminate\Http\Request;
 
 class VaccineController extends Controller
 {
+    public function __construct () {
+        $this->middleware('has.permission:vaccines.store')->only('store');
+        $this->middleware('has.permission:vaccines.update')->only('update');
+        $this->middleware('has.permission:vaccines.destroy')->only('destroy');
+    }
     /**
      * Display a listing of the resource.
      *

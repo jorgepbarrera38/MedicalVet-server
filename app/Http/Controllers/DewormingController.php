@@ -9,6 +9,11 @@ use Illuminate\Http\Request;
 
 class DewormingController extends Controller
 {
+    public function __construct () {
+        $this->middleware('has.permission:dewormings.store')->only('store');
+        $this->middleware('has.permission:dewormings.update')->only('update');
+        $this->middleware('has.permission:dewormings.destroy')->only('destroy');
+    }
     /**
      * Display a listing of the resource.
      *
