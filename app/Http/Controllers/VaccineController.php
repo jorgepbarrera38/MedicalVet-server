@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Vaccine;
+use App\Models\Pet;
 use Illuminate\Http\Request;
 
 class VaccineController extends Controller
@@ -24,8 +25,8 @@ class VaccineController extends Controller
         return $vaccines;
     }
 
-    public function getQuantityVaccinesCreated () {
-        return Vaccine::count();
+    public function getQuantityVaccinesCreated (Pet $pet) {
+        return Vaccine::where('pet_id', $pet->id)->count();
     }
 
     /**

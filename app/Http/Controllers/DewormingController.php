@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Deworming;
 use App\Models\Product;
 use App\Models\Unity;
+use App\Models\Pet;
 use Illuminate\Http\Request;
 
 class DewormingController extends Controller
@@ -29,8 +30,8 @@ class DewormingController extends Controller
         ];
     }
 
-    public function getQuantityDewormingsCreated () {
-        return Deworming::count();
+    public function getQuantityDewormingsCreated (Pet $pet) {
+        return Deworming::where('pet_id', $pet->id)->count();
     }
 
     /**
