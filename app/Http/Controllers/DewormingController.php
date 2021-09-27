@@ -29,6 +29,10 @@ class DewormingController extends Controller
         ];
     }
 
+    public function getQuantityDewormingsCreated () {
+        return Deworming::count();
+    }
+
     /**
      * Store a newly created resource in storage.
      *

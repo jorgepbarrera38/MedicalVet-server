@@ -24,6 +24,10 @@ class VaccineController extends Controller
         return $vaccines;
     }
 
+    public function getQuantityVaccinesCreated () {
+        return Vaccine::count();
+    }
+
     /**
      * Show the form for creating a new resource.
      *
