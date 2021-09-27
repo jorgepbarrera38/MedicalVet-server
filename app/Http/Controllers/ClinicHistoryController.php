@@ -10,6 +10,8 @@ use App\Models\Pet;
 use App\Models\Product;
 use App\Models\Service;
 use App\Models\Diagnosis;
+use App\Models\Deworming;
+use App\Models\Vaccine;
 use App\Models\Company;
 use App\Models\Parameter;
 use App\Models\Unity;
@@ -104,6 +106,11 @@ class ClinicHistoryController extends Controller
         $services = Service::orderBy('name')->get(['id', 'name']);
         $dewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);
         $unities = Unity::orderBy('description')->get(['id', 'description']);
+
+        
+        $dewormingsCountTotalFromPet = Deworming::where('pet_id', $pet)->count();
+        $vaccinesCountTotalFromPet = Vaccine::where('pet_id', $pet)->count();
+
         return [
             'infoFromPetAndOwner' => $infoFromPetAndOwner,
             'diagnosesFromPet' => $diagnosesFromPet,
@@ -113,7 +120,9 @@ class ClinicHistoryController extends Controller
             'products' => $products,
             'services' => $services,
             'dewormings' => $dewormings,
-            'unities' => $unities
+            'unities' => $unities,
+            'dewormingsCountTotalFromPet' => $dewormingsCountTotalFromPet,
+            'vaccinesCountTotalFromPet' => $vaccinesCountTotalFromPet,
         ];
     }
 
