@@ -21,6 +21,7 @@ class OwnerController extends Controller
         return Owner::where('identification', 'like', '%' . request()->search . '%')
                       ->orWhere('names', 'like', '%' . request()->search . '%')
                       ->orWhere('surnames', 'like', '%' . request()->search . '%')
+                      ->with('city.state')
                       ->with('pets.species')
                       ->with('pets.race')
                       ->paginate(7);
