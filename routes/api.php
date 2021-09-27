@@ -48,6 +48,7 @@ Route::middleware('auth')->group(function () {
     
     Route::get('clinic-histories/{pet}/send-for-email', 'ClinicHistoryController@sendClinicHistoryForEmail');
 
+    Route::get('users/get-quantity-users-created', 'UserController@getQuantityUsersCreated');
     Route::put('users/{user}/update-permissions', 'UserController@updatePermissions');    
     Route::get('users/{user}/get-permissions', 'UserController@getPermissions');    
     Route::get('company', 'CompanyController@index');    

@@ -22,6 +22,10 @@ class UserController extends Controller
                         ->paginate(7);
     }
 
+    public function getQuantityUsersCreated () {
+        return User::count();
+    }
+
     public function store (Request $request) {
         $data = $request->validate([
             'username' => 'required|max:30|unique:users,username',
