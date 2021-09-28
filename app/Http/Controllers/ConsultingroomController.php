@@ -25,6 +25,10 @@ class ConsultingroomController extends Controller
         return Consultingroom::where('name', 'like', '%' . request()->search . '%')->paginate(7);
     }
 
+    public function getQuantityConsultingroomsCreated () {
+        return Consultingroom::count();
+    }
+
     /**
      * Store a newly created resource in storage.
      *

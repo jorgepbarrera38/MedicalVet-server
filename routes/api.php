@@ -59,6 +59,7 @@ Route::middleware('auth')->group(function () {
     
     Route::apiResource('users', 'UserController');
 
+    Route::get('consultingrooms/get-quantity-consultingrooms-created', 'ConsultingroomController@getQuantityConsultingroomsCreated');
     Route::apiResource('consultingrooms', 'ConsultingroomController');
     Route::apiResource('activities', 'ActivityController');
     Route::apiResource('reason-cancellations', 'ReasonCancellationController');
