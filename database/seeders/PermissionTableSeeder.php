@@ -15,7 +15,7 @@ class PermissionTableSeeder extends Seeder
     public function run()
     {
         //Mascotas
-        /*Permission::create([
+        Permission::create([
             'name' => 'pets.index',
             'description' => 'Listar mascotas'
         ]);
@@ -412,7 +412,7 @@ class PermissionTableSeeder extends Seeder
         Permission::create([
             'name' => 'informed-consent-templates.customize',
             'description' => 'Personalizar plantillas de consentimiento informado'
-        ]);*/
+        ]);
         Permission::create([
             'name' => 'vaccines.store',
             'description' => 'Registrar vacunas aplicadas'
