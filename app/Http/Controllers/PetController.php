@@ -133,7 +133,7 @@ class PetController extends Controller
             if ($pet->photo && Storage::exists($pet->photo)) {
                 Storage::delete($pet->photo);
             }
-            $pet->photo = Storage::putFile('images/photos-pet', $request->file('photo'));
+            $data['photo'] = Storage::putFile('images/photos-pet', $request->file('photo'));
         }
 
         $pet->update($data);
