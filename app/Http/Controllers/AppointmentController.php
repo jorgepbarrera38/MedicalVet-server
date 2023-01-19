@@ -28,9 +28,9 @@ class AppointmentController extends Controller
         return Appointment::with(['pet:id,name,owner_id', 'consultingroom:id,name', 'activity:id,name'])
                                 ->with('pet.owner:id,identification,names,surnames')
                                 ->orderBy('date_time_start', 'ASC')
-                                ->whereBetween('date_time_start', 
-                                                [ request()->date, 
-                                                  Carbon::createFromDate(request()->date)->addHours(23)->addMinutes(59)->addSeconds(59) 
+                                ->whereBetween('date_time_start',
+                                                [ request()->date,
+                                                  Carbon::createFromDate(request()->date)->addHours(23)->addMinutes(59)->addSeconds(59)
                                                 ]
                                 )
                                 ->where('state', 'PENDIENTE')
@@ -48,7 +48,8 @@ class AppointmentController extends Controller
     }
 
     public function getAppointments (Pet $pet) {
-        return $pet->appointments()->with(['consultingroom:id,name', 'activity:id,name'])->where('state', 'PENDIENTE')->get();
+        //return $pet->appointments()->with(['consultingroom:id,name', 'activity:id,name'])->where('state', 'PENDIENTE')->get();
+        return $pet->appointments()->with(['consultingroom:id,name', 'activity:id,name'])->get();
     }
 
     public function store (Request $request) {
@@ -70,12 +71,12 @@ class AppointmentController extends Controller
             'duration' => 'Duración',
             'observations' => 'Observaciónes'
         ]);
-        
+
         $thereIsAppointmentCrossing = Appointment::where('consultingroom_id', $data['consultingroom_id'])
                             ->where(function ($query) use ($data) {
 
                                 $query->where(function ($query) use ($data) {
-    
+
                                         $query->where(function ($query) use ($data) {
                                             $query->where('date_time_start', '<=', Carbon::createFromDate($data['date_time_start'])->subMinutes(1))
                                                 ->where('date_time_finish', '>=', Carbon::createFromDate($data['date_time_start'])->addMinutes(1));
@@ -84,18 +85,18 @@ class AppointmentController extends Controller
                                             $query->where('date_time_start', '<=', Carbon::createFromDate($data['date_time_start'])->addMinutes($data['duration'] - 1))
                                                 ->where('date_time_finish', '>=', Carbon::createFromDate($data['date_time_start'])->addMinutes($data['duration'] + 1));
                                         });
-    
+
                                 })->orWhere(function ($query) use ($data) {
-    
+
                                     $query->where('date_time_start', '>=', Carbon::createFromDate($data['date_time_start'])->subMinutes(1))
                                         ->where('date_time_finish', '<=', Carbon::createFromDate($data['date_time_start'])->addMinutes($data['duration'] + 1));
-    
+
                                 });
 
                             })
                         ->where('state', 'PENDIENTE')
                         ->exists();
-        
+
         if ($thereIsAppointmentCrossing) {
             return response()->json(['errors' => ['thereIsAppointmentCrossing' => ['Hay citas asignadas dentro del rango de fechas seleccionado para este consultorio']]], 422);
         }
@@ -118,7 +119,7 @@ class AppointmentController extends Controller
         if ($appointment->date_time_start >= Carbon::now()->format('Y-m-d H:i')) {
             return response()->json(['errors' => ['message' => ['La cita aún no ha iniciado']]], 422);
         }
-        
+
         $appointment->update(['state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id]);
     }
 
@@ -157,11 +158,11 @@ class AppointmentController extends Controller
     }
 
     public function reportGetAppointments (Request $request) {
-        
-        return Appointment::whereBetween('date_time_start', 
-                                            [ 
-                                                $request->from, 
-                                                Carbon::createFromDate($request->until)->addHours(23)->addMinutes(59)->addSeconds(59) 
+
+        return Appointment::whereBetween('date_time_start',
+                                            [
+                                                $request->from,
+                                                Carbon::createFromDate($request->until)->addHours(23)->addMinutes(59)->addSeconds(59)
                                             ])
                             ->when($request->pending == 'false', function ($query) {
                                 return $query->where('state', '<>', 'PENDIENTE');
@@ -182,11 +183,11 @@ class AppointmentController extends Controller
     }
 
     public function reportGetAppointmentsToPdf (Request $request) {
-        
-        $appointments = Appointment::whereBetween('date_time_start', 
-                                            [ 
-                                                $request->from, 
-                                                Carbon::createFromDate($request->until)->addHours(23)->addMinutes(59)->addSeconds(59) 
+
+        $appointments = Appointment::whereBetween('date_time_start',
+                                            [
+                                                $request->from,
+                                                Carbon::createFromDate($request->until)->addHours(23)->addMinutes(59)->addSeconds(59)
                                             ])
                             ->when($request->pending == 'false', function ($query) {
                                 return $query->where('state', '<>', 'PENDIENTE');
@@ -209,7 +210,7 @@ class AppointmentController extends Controller
 
         $pdf = \PDF::loadView('reports.appointments.appointments', compact('appointments', 'company'))
                         ->setPaper('letter', 'landscape');
-        return $pdf->stream('invoice.pdf');                            
+        return $pdf->stream('invoice.pdf');
     }
 }
 
