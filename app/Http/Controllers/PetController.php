@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Storage;
 
 class PetController extends Controller
 {
-    
+
     public function __construct () {
         $this->middleware('has.permission:pets.index')->only('index');
         $this->middleware('has.permission:pets.store')->only('store');
@@ -70,11 +70,11 @@ class PetController extends Controller
         $data['user_id'] = auth()->user()->id;
 
         $pet = (new Pet)->fill($data);
-        
+
         if ($request->hasFile('photo')) {
             $pet->photo = Storage::putFile('images/photos-pet', $request->file('photo'));
         }
-        
+
         $pet->save();
     }
 
@@ -148,7 +148,11 @@ class PetController extends Controller
     public function destroy(Pet $pet)
     {
         if ($pet->clinicHistories()->exists()) {
-            abort(422);
+            return response()->json(['message' => 'La mascota no se puede eliminar ya que tiene historias clínicas relacionadas'], 422);
+        }
+
+        if ($pet->appointments()->exists()) {
+            return response()->json(['message' => 'La mascota no se puede eliminar ya que tiene citas relacionadas'], 422);
         }
 
         //Verificando si ya tiene foto para eliminarla
