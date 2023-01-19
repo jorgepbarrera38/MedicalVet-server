@@ -12,4 +12,8 @@ class ReasonCancellation extends Model
     protected $fillable = [
         'name'
     ];
+
+    public function appointments () {
+        return $this->hasMany('App\Models\Appointment');
+    }
 }

@@ -77,6 +77,10 @@ class ReasonCancellationController extends Controller
      */
     public function destroy(ReasonCancellation $reasonCancellation)
     {
-        //
+        if ($reasonCancellation->appointments()->exists()) {
+            return response()->json(['message' => 'El motivo de cancelación no se puede eliminar ya que tiene citas relacionadas'], 422);
+        }
+
+        $reasonCancellation->delete();
     }
 }
