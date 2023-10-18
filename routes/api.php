@@ -102,6 +102,10 @@ Route::middleware('auth')->group(function () {
     Route::post('dewormings', 'DewormingController@store');
     Route::put('dewormings/{deworming}', 'DewormingController@update');
     Route::delete('dewormings/{deworming}', 'DewormingController@destroy');
+
+    //Facturación
+    Route::get('billings/{pet}/get-pending-billing', 'BillingController@getPendingBilling');
+    Route::post('billings/{pet}/bill', 'BillingController@bill');
 });
 
 Route::group([

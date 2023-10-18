@@ -18,7 +18,7 @@ class BillingPendingBillingsTable extends Migration
 
             $table->datetime('datetime');
 
-            $table->text('code');
+            $table->string('code');
             $table->text('description');
 
             $table->unsignedBigInteger('product_id')->nullable();

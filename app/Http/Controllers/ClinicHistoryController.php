@@ -22,6 +22,7 @@ use App\Models\ClinicHistoryProduct;
 use App\Models\ClinicHistoryService;
 use App\Models\ClinicHistoryAttachment;
 use App\Models\ClinicHistoryPrescription;
+use App\Models\BillingPendingBilling;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Arr;
@@ -395,6 +396,25 @@ class ClinicHistoryController extends Controller
         
                 $clinicHistory->products()->createMany($productsApplied);
 
+                /*Agregando los productos a pendientes por facturar*/
+
+                foreach ($productsApplied as $productApplied) {
+                    $productDB = Product::find($productApplied['product_id']);
+
+                    BillingPendingBilling::create([
+                    'datetime' => now(),
+                    'code' => $productDB->code,
+                    'description' => $productDB->name,
+                    'product_id' => $productDB->id,
+                    'service_id' => null,
+                    'price' => $productDB->price,
+                    'quantity' => $productApplied['quantity'],
+                    'owner_id' => $clinicHistory->pet->owner_id,
+                    'pet_id' => $clinicHistory->pet_id,
+                    ]);
+                
+                }
+
                 $servicesApplied = collect($request->services)->map(function ($item) {
                     return [
                             'service_id' => $item['service_id'],
@@ -405,6 +425,25 @@ class ClinicHistoryController extends Controller
 
                 
                 $clinicHistory->services()->createMany($servicesApplied);
+
+                /*Agregando los servicios a pendientes por facturar*/
+
+                foreach ($servicesApplied as $serviceApplied) {
+                    $serviceDB = Service::find($serviceApplied['service_id']);
+
+                    BillingPendingBilling::create([
+                    'datetime' => now(),
+                    'code' => $serviceDB->code,
+                    'description' => $serviceDB->name,
+                    'product_id' => null,
+                    'service_id' => $serviceDB->id,
+                    'price' => $serviceDB->price,
+                    'quantity' => $serviceApplied['quantity'],
+                    'owner_id' => $clinicHistory->pet->owner_id,
+                    'pet_id' => $clinicHistory->pet_id,
+                    ]);
+                
+                }
             }  
  
             //Archivos adjuntos
