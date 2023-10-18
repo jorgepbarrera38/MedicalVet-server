@@ -29,9 +29,13 @@ class ServiceController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|max:100|unique:services,name'
+            'code' => 'required|max:20|unique:services,code',
+            'name' => 'required|max:100|unique:services,name',
+            'price' => 'required|numeric|min:0|max:50000000'
         ], [], [
-            'name' => 'Nombre'
+            'code' => 'Código',
+            'name' => 'Nombre',
+            'price' => 'Precio'
         ]);
 
         $data['user_id'] = auth()->user()->id;
@@ -53,9 +57,13 @@ class ServiceController extends Controller
     public function update(Request $request, Service $service)
     {
         $data = $request->validate([
-            'name' => 'required|max:100|unique:services,name,' . $service->id
+            'code' => 'required|max:20|unique:services,code,' . $service->id,
+            'name' => 'required|max:100|unique:services,name,' . $service->id,
+            'price' => 'required|numeric|min:0|max:50000000'
         ], [], [
-            'name' => 'Nombre'
+            'code' => 'Código',
+            'name' => 'Nombre',
+            'price' => 'Precio'
         ]);
 
         $service->update($data);

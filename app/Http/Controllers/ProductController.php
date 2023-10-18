@@ -29,11 +29,15 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
+            'code' => 'required|max:20|unique:products,code',
             'name' => 'required|max:90|unique:products,name',
+            'price' => 'required|numeric|min:0|max:50000000',
             'vaccine' => 'nullable|boolean',
             'deworming' => 'nullable|boolean'
         ], [], [
-            'name' => 'Nombre'
+            'code' => 'Código',
+            'name' => 'Nombre',
+            'price' => 'Precio'
         ]);
 
         $data['user_id'] = auth()->user()->id;
@@ -56,11 +60,15 @@ class ProductController extends Controller
     public function update(Request $request, Product $product)
     {
         $data = $request->validate([
+            'code' => 'required|max:20|unique:products,code,' . $product->id,
             'name' => 'required|max:90|unique:products,name,' . $product->id,
+            'price' => 'required|numeric|min:0|max:50000000',
             'vaccine' => 'nullable|boolean',
             'deworming' => 'nullable|boolean'
         ], [], [
-            'name' => 'Nombre'
+            'code' => 'Código',
+            'name' => 'Nombre',
+            'price' => 'Precio'
         ]);
 
         $product->update($data);
