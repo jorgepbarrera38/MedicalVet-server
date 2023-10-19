@@ -113,15 +113,13 @@
         <table border="1" style="border-collapse:collapse;margin-top:20px" width="100%">
 
                 <tr>
-                    <td colspan="5" nowrap>
+                    <td colspan="3" nowrap>
                         <center><strong>DESPARASITACIONES<strong></center>
                     </td>
                 </tr>
 
                 <tr>
                     <td nowrap><strong>Desparasitante<strong></td>
-                    <td nowrap><strong>Dosis<strong></td>
-                    <td nowrap><strong>Unidad<strong></td>
                     <td nowrap><strong>Fecha de aplicación<strong></td>
                     <td nowrap><strong>Fecha siguiente desparasitación<strong></td>
                 </tr>
@@ -129,8 +127,6 @@
                 @foreach($dewormings as $deworming)
                 <tr>
                     <td>{{ $deworming->product->name }}</td>
-                    <td nowrap>{{ $deworming->dose }}</td>
-                    <td nowrap>{{ $deworming->unity->description }}</td>
                     <td nowrap>{{ $deworming->clinicHistory ? $deworming->clinicHistory->created_at : $deworming->created_at }}</td>
                     <td nowrap>{{ $deworming->next_date }}</td>
                 </tr>

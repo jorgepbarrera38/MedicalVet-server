@@ -11,6 +11,7 @@ class ConsultationPurposes extends Model
 
     protected $fillable = [
         'name',
+        'reason_consultation',
         'symptoms',
         'indications',
         'records',

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\BillingPendingBilling;
 use App\Models\BillingBill;
 use App\Models\BillingBillDetail;
+use App\Models\Pet;
 use Illuminate\Support\Str;
 
 
@@ -18,7 +19,7 @@ class BillingController extends Controller
      */
     public function getPendingBilling(Request $request, $petSelected)
     {
-        $productsAndServices = BillingPendingBilling::where('pet_id', $petSelected)->where('billed', false)->orderBy('datetime', 'DESC')->get();
+        $productsAndServices = BillingPendingBilling::where('pet_id', $petSelected)->where('billed', false)->orderBy('id', 'DESC')->get();
 
         return [
             'productsAndServices' => $productsAndServices,
@@ -37,12 +38,16 @@ class BillingController extends Controller
             'productsAndServicesChecked.*.id' => 'required|exists:billing_pending_billings,id'
         ]);        
 
-        \DB::transaction(function () use ($request) {
+        \DB::transaction(function () use ($request, $petSelected) {
+
+            $pet = Pet::findOrFail($petSelected);
 
            $billingBill = BillingBill::create([
                 'date' => now(),
                 'number_bill' => Str::random(40),
-                'total' => 0
+                'total' => 0,
+                'owner_id' => $pet->owner_id,
+                'pet_id' => $pet->id
             ]);
 
             $totalBill = 0;

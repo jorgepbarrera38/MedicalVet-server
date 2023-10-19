@@ -14,7 +14,6 @@ use App\Models\Deworming;
 use App\Models\Vaccine;
 use App\Models\Company;
 use App\Models\Parameter;
-use App\Models\Unity;
 use App\Models\Record;
 use App\Models\Appointment;
 use App\Models\ClinicHistoryDiagnosis;
@@ -107,7 +106,6 @@ class ClinicHistoryController extends Controller
         $products = Product::where('vaccine', false)->where('deworming', false)->orderBy('name')->get(['id', 'name']);
         $services = Service::orderBy('name')->get(['id', 'name']);
         $dewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);
-        $unities = Unity::orderBy('description')->get(['id', 'description']);
 
         
         $dewormingsCountTotalFromPet = Deworming::where('pet_id', $pet)->count();
@@ -122,7 +120,6 @@ class ClinicHistoryController extends Controller
             'products' => $products,
             'services' => $services,
             'dewormings' => $dewormings,
-            'unities' => $unities,
             'dewormingsCountTotalFromPet' => $dewormingsCountTotalFromPet,
             'vaccinesCountTotalFromPet' => $vaccinesCountTotalFromPet,
         ];
@@ -162,7 +159,7 @@ class ClinicHistoryController extends Controller
         $data = $request->validate([
             'pet_id' => 'required|exists:pets,id',
             'consultation_purposes_id'=> 'required|exists:consultation_purposes,id',
-            'reason_consultation' => 'required|max:800',
+            'reason_consultation' => ['max:800', Rule::requiredIf($consultationPurposes->reason_consultation)],
             'symptoms' => ['max:800', Rule::requiredIf($consultationPurposes->symptoms)],
             'anamnesis' => ['max:800', Rule::requiredIf($consultationPurposes->anamnesis)],
             'records' => 'array',
@@ -210,13 +207,10 @@ class ClinicHistoryController extends Controller
             'vaccines.*.next_date' => 'required|date|after_or_equal:today',
             'dewormings' => 'array',
             'dewormings.*.product_id' => 'required|exists:products,id',
-            'dewormings.*.dose' => 'required|numeric|min:0.0001|max:1000',
             'dewormings.*.next_date' => 'required|after_or_equal:today',
-            'dewormings.*.unity_id' => 'required|exists:unities,id',
             'products' => 'array',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|numeric|min:0.0001|max:1000',
-            'products.*.unity_id' => 'required|exists:unities,id',
             'products.*.observations' => 'nullable|max:100',
             'services' => 'array',
             'services.*.service_id' => 'required|exists:services,id',
@@ -366,6 +360,23 @@ class ClinicHistoryController extends Controller
                 })->toArray();
         
                 $clinicHistory->vaccines()->createMany($vaccines);
+
+                /*Agregando las vacunas a "pendientes por facturar"*/
+                foreach ($vaccines as $vaccine) {
+                    $productDB = Product::find($vaccine['product_id']);
+
+                    BillingPendingBilling::create([
+                    'datetime' => now(),
+                    'code' => $productDB->code,
+                    'description' => $productDB->name,
+                    'product_id' => $productDB->id,
+                    'service_id' => null,
+                    'price' => $productDB->price,
+                    'quantity' => 1,
+                    'owner_id' => $clinicHistory->pet->owner_id,
+                    'pet_id' => $clinicHistory->pet_id,
+                    ]);
+                }
             }
 
             //Registro de desparacitasiónes
@@ -374,14 +385,29 @@ class ClinicHistoryController extends Controller
                     return [
                             'pet_id' => $clinicHistory->pet_id,
                             'product_id' => $item['product_id'],
-                            'dose' => $item['dose'],
-                            'unity_id' => $item['unity_id'],
                             'next_date' => $item['next_date'],
                             'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
         
                 $clinicHistory->dewormings()->createMany($dewormings);
+
+                /*Agregando los desparasitantes a "pendientes por facturar"*/
+                foreach ($dewormings as $deworming) {
+                    $productDB = Product::find($deworming['product_id']);
+
+                    BillingPendingBilling::create([
+                    'datetime' => now(),
+                    'code' => $productDB->code,
+                    'description' => $productDB->name,
+                    'product_id' => $productDB->id,
+                    'service_id' => null,
+                    'price' => $productDB->price,
+                    'quantity' => 1,
+                    'owner_id' => $clinicHistory->pet->owner_id,
+                    'pet_id' => $clinicHistory->pet_id,
+                    ]);
+                }
             }
 
             //Registro de productos y servicios aplicados
@@ -390,15 +416,13 @@ class ClinicHistoryController extends Controller
                     return [
                             'product_id' => $item['product_id'],
                             'quantity' => $item['quantity'],
-                            'unity_id' => $item['unity_id'],
                             'observations' => $item['observations']
                         ];
                 })->toArray();
         
                 $clinicHistory->products()->createMany($productsApplied);
 
-                /*Agregando los productos a pendientes por facturar*/
-
+                /*Agregando los productos a "pendientes por facturar"*/
                 foreach ($productsApplied as $productApplied) {
                     $productDB = Product::find($productApplied['product_id']);
 
@@ -644,7 +668,6 @@ class ClinicHistoryController extends Controller
                                                             ->with('clinicHistories.vaccines')
                                                             ->with('clinicHistories.dewormings')
                                                             ->with('clinicHistories.dewormings.product')
-                                                            ->with('clinicHistories.dewormings.unity')
                                                             ->with('clinicHistories.products')
                                                             ->with('clinicHistories.services')  
                                                             ->with(['clinicHistories' => function ($query) use ($folios) {

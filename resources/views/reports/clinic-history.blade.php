@@ -102,8 +102,12 @@
 
         <hr>
 
+        <!--Motivo-->
+        @if($clinicHistory->reason_consultation)
         <center><h4>MOTIVO</h4></center>
         <div align="justify">{{ $clinicHistory->reason_consultation }}</div>
+        @endif
+        <!--Fin motivo-->
 
         <!--Síntomas-->
         @if($clinicHistory->symptoms)
@@ -268,8 +272,6 @@
                 <thead>
                     <tr>
                         <th>Producto</th>
-                        <th>Dosis</th>
-                        <th>Unidad</th>
                         <th nowrap>Fecha siguiente desparasitación</th>
                     </tr>
                 </thead>
@@ -277,8 +279,6 @@
                     @foreach($clinicHistory->dewormings as $deworming)
                     <tr>
                         <td>{{ $deworming->product->name }}</td>
-                        <td nowrap>{{ $deworming->dose }}</td>
-                        <td nowrap>{{ $deworming->unity->description }}</td>
                         <td nowrap>{{ $deworming->next_date }}</td>
                     </tr>
                     @endforeach
@@ -295,7 +295,6 @@
                     <tr>
                     <th nowrap>Producto</th>
                     <th nowrap>Cantidad aplicada</th>
-                    <th nowrap>Unidad</th>
                     <th nowrap>Observaciónes</th>
                     </tr>
                 </thead>
@@ -304,7 +303,6 @@
                     <tr>
                         <td>{{ $product->product->name }}</td>
                         <td>{{ $product->quantity }}</td>
-                        <td>{{ $product->unity ? $product->unity->description : '' }}</td>
                         <td align="justify">{{ $product->observations }}</td>
                     </tr>
                     @endforeach

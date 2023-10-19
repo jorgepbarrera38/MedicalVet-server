@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\Pet;
-use App\Models\Unity;
 use App\Models\Product;
 use App\Models\ClinicHistoryPrescription;
 use App\Models\Vaccine;
@@ -113,21 +112,18 @@ class ReportController extends Controller
                         ->with('clinicHistory:id,number_folio,created_at')
                         ->with('product:id,name')
                         ->with('user:id,identification,names,surnames')
-                        ->with('unity:id,description')
                         ->with('clinicHistory.user:id,identification,username,names,surnames')
                         ->orderBy('id')
-                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'unity_id', 'dose', 'created_at', 'user_id']);     
+                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at', 'user_id']);     
                         
         $allVaccines = Product::where('vaccine', true)->orderBy('name')->get(['id', 'name']);
         $allDewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);
-        $allUnities = Unity::orderBy('description')->get(['id', 'description']);
                     
         return [
             'vaccines' => $vaccines,
             'dewormings' => $dewormings,
             'allVaccines' => $allVaccines,
             'allDewormings' => $allDewormings,
-            'allUnities' => $allUnities,
         ];
     }
 
@@ -145,10 +141,9 @@ class ReportController extends Controller
         $dewormings = Deworming::where('pet_id', $pet->id)
                         ->with('clinicHistory:id,number_folio,created_at')
                         ->with('product:id,name')
-                        ->with('unity:id,description')
                         ->with('clinicHistory.user:id,identification,username,names,surnames')
                         ->orderBy('id')
-                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'unity_id', 'dose', 'created_at']);
+                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at']);
                         
         $company = Company::first();
 
@@ -172,10 +167,9 @@ class ReportController extends Controller
             $dewormings = Deworming::where('pet_id', $pet->id)
                             ->with('clinicHistory:id,number_folio,created_at')
                             ->with('product:id,name')
-                            ->with('unity:id,description')
                             ->with('clinicHistory.user:id,identification,username,names,surnames')
                             ->orderBy('id')
-                            ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'unity_id', 'dose', 'created_at']);
+                            ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at']);
 
             //Verificando que el propietario tenga correo
             if (!$pet->owner->email) {
@@ -240,7 +234,6 @@ class ReportController extends Controller
                                                         ->with('clinicHistories.vaccines')
                                                         ->with('clinicHistories.dewormings')
                                                         ->with('clinicHistories.dewormings.product')
-                                                        ->with('clinicHistories.dewormings.unity')
                                                         ->with('clinicHistories.products')
                                                         ->with('clinicHistories.services')  
                                                         ->with(['clinicHistories' => function ($query) use ($folios) {
@@ -275,13 +268,12 @@ class ReportController extends Controller
                                         $query->where('pet_id', $pet);
                                     })
                                     ->with('product:id,name')
-                                    ->with('unity:id,description')
                                     ->with('clinicHistory:id,number_folio,created_at,user_id')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
                                     ->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
                                     })
-                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'unity_id', 'observations']);   
+                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations']);   
                                     
         return [
             'services' => $services,
@@ -308,13 +300,12 @@ class ReportController extends Controller
                                         $query->where('pet_id', $pet->id);
                                     })
                                     ->with('product:id,name')
-                                    ->with('unity:id,description')
                                     ->with('clinicHistory:id,number_folio,created_at,user_id')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
                                     ->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
                                     })
-                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'unity_id', 'observations']);   
+                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations']);   
                                     
         $company = Company::first();
 

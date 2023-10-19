@@ -14,5 +14,7 @@ class BillingBill extends Model
         'number_bill',
         'total',
         'cancelled',
+        'owner_id',
+        'pet_id',
     ];
 }

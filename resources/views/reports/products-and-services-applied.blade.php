@@ -98,7 +98,6 @@
                 <tr>
                     <td nowrap><strong>Producto<strong></td>
                     <td nowrap><strong>Cantidad<strong></td>
-                    <td nowrap><strong>Unidad<strong></td>
                     <td nowrap><strong>Fecha de aplicación<strong></td>
                     <td nowrap><strong>Observaciónes<strong></td>
                 </tr>
@@ -106,7 +105,6 @@
                 <tr>
                     <td>{{ $product->product->name }}</td>
                     <td>{{ $product->quantity }}</td>
-                    <td>{{ $product->unity ? $product->unity->description : '' }}</td>
                     <td nowrap>{{ $product->clinicHistory->created_at }}</td>
                     <td>{{ $product->observations }}</td>
                 </tr>

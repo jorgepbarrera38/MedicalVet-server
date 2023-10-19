@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Deworming;
 use App\Models\Product;
-use App\Models\Unity;
 use App\Models\Pet;
 use Illuminate\Http\Request;
 
@@ -23,10 +22,8 @@ class DewormingController extends Controller
     public function index()
     {
         $dewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);
-        $unities = Unity::orderBy('description')->get(['id', 'description']);
         return [
             'dewormings' => $dewormings,
-            'unities' => $unities
         ];
     }
 
@@ -45,16 +42,12 @@ class DewormingController extends Controller
         $data = $request->validate([
             'pet_id' => 'required|exists:pets,id',
             'product_id' => 'required|exists:products,id',
-            'dose' => 'required|numeric|min:0.0001|max:1000',
-            'unity_id' => 'required|exists:unities,id',
             'next_date' => 'required|date|after_or_equal:today',
         ], [
             'next_date.after_or_equal' => 'El campo Próxima desparasitación debe ser igual o superior a la fecha actual'
         ], [
             'pet_id' => 'Mascota',
             'product_id' => 'Desparasitante',
-            'dose' => 'Dosis',
-            'unity_id' => 'Unidad',
             'next_date' => 'Próxima desparasitación'
         ]);
 
@@ -85,16 +78,12 @@ class DewormingController extends Controller
     {
         $data = $request->validate([
             'product_id' => 'required|exists:products,id',
-            'dose' => 'required|numeric|min:0.0001|max:1000',
-            'unity_id' => 'required|exists:unities,id',
             'next_date' => 'required|date|after_or_equal:today',
         ], [
             'next_date.after_or_equal' => 'El campo Próxima vacuna debe ser igual o superior a la fecha actual'
         ], [
             'product_id' => 'Vacuna',
             'next_date' => 'Próxima vacuna',
-            'dose' => 'Dosis',
-            'unity_id' => 'Unidad'
         ]);
 
         //Para editar vacuna registrada desde HC

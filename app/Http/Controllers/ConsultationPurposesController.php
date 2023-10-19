@@ -30,6 +30,7 @@ class ConsultationPurposesController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|max:80|unique:consultation_purposes,name',
+            'reason_consultation' => 'required|boolean',
             'symptoms' => 'required|boolean',
             'indications' => 'required|boolean',
             'records' => 'required|boolean',
@@ -67,6 +68,7 @@ class ConsultationPurposesController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|max:80|unique:consultation_purposes,name,' . $consultation_purpose->id,
+            'reason_consultation' => 'required|boolean',
             'symptoms' => 'required|boolean',
             'indications' => 'required|boolean',
             'records' => 'required|boolean',

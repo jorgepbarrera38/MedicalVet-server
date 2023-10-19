@@ -12,18 +12,12 @@ class Deworming extends Model
     protected $fillable = [
         'pet_id',
         'product_id',
-        'dose',
-        'unity_id',
         'next_date',
         'user_id'
     ];
 
     public function product () {
         return $this->belongsTo('App\Models\Product');
-    }
-
-    public function unity () {
-        return $this->belongsTo('App\Models\Unity');
     }
 
     public function clinicHistory () {

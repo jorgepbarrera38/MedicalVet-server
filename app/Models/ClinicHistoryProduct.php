@@ -12,7 +12,6 @@ class ClinicHistoryProduct extends Model
     protected $fillable = [
         'product_id',
         'quantity',
-        'unity_id',
         'observations'
     ];
 
@@ -22,9 +21,5 @@ class ClinicHistoryProduct extends Model
 
     public function clinicHistory () {
         return $this->belongsTo('App\Models\ClinicHistory');
-    }
-
-    public function unity () {
-        return $this->belongsTo('App\Models\Unity');
     }
 }
