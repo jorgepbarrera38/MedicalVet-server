@@ -47,6 +47,7 @@ class ClinicHistoryController extends Controller
         return Owner::where('identification', 'like', '%' . request()->q . '%')
                         ->orWhere('names', 'like', '%' . request()->q . '%')
                         ->orWhere('surnames', 'like', '%' . request()->q . '%')
+                        ->with('pets')
                         ->withCount('pets')->orderBy('names')->paginate(9);
     }
 
