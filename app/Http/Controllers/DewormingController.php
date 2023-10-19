@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Deworming;
 use App\Models\Product;
 use App\Models\Pet;
+use App\Models\BillingPendingBilling;
 use Illuminate\Http\Request;
 
 class DewormingController extends Controller
@@ -51,7 +52,25 @@ class DewormingController extends Controller
             'next_date' => 'Próxima desparasitación'
         ]);
 
-        auth()->user()->dewormings()->create($data);
+        \DB::transaction(function () use ($data) {
+
+            $productDB = Product::find($data['product_id']);
+            $petDB = Pet::find($data['pet_id']);
+
+            BillingPendingBilling::create([
+                'datetime' => now(),
+                'code' => $productDB->code,
+                'description' => $productDB->name,
+                'product_id' => $productDB->id,
+                'service_id' => null,
+                'price' => $productDB->price,
+                'quantity' => 1,
+                'owner_id' => $petDB->owner_id,
+                'pet_id' => $petDB->id,
+            ]);
+
+            auth()->user()->dewormings()->create($data);
+        });
 
         return response()->json(['message' => 'Deworming registered'], 201);
     }
