@@ -105,16 +105,16 @@ class ReportController extends Controller
                         ->with('product:id,name')
                         ->with('user:id,identification,names,surnames')
                         ->with('clinicHistory.user:id,identification,username,names,surnames')
-                        ->orderBy('id')
-                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at', 'user_id']);
+                        ->orderBy('id', 'desc')
+                        ->get(['id', 'clinic_history_id', 'product_id', 'registration_date', 'application_date', 'next_date', 'created_at', 'user_id']);
 
         $dewormings = Deworming::where('pet_id', $pet)
                         ->with('clinicHistory:id,number_folio,created_at')
                         ->with('product:id,name')
                         ->with('user:id,identification,names,surnames')
                         ->with('clinicHistory.user:id,identification,username,names,surnames')
-                        ->orderBy('id')
-                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at', 'user_id']);     
+                        ->orderBy('id', 'desc')
+                        ->get(['id', 'clinic_history_id', 'product_id', 'registration_date', 'application_date', 'next_date', 'created_at', 'user_id']);     
                         
         $allVaccines = Product::where('vaccine', true)->orderBy('name')->get(['id', 'name']);
         $allDewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);

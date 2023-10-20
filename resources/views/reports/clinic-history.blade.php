@@ -250,6 +250,7 @@
                 <thead>
                     <tr>
                     <th nowrap>Vacuna</th>
+                    <th nowrap>Fecha de aplicación</th>
                     <th nowrap>Fecha siguiente vacuna</th>
                     </tr>
                 </thead>
@@ -257,6 +258,7 @@
                     @foreach($clinicHistory->vaccines as $vaccine)
                     <tr>
                         <td>{{ $vaccine->product->name }}</td>
+                        <td nowrap>{{ $vaccine->application_date }}</td>
                         <td nowrap>{{ $vaccine->next_date }}</td>
                     </tr>
                     @endforeach
@@ -272,6 +274,7 @@
                 <thead>
                     <tr>
                         <th>Producto</th>
+                        <th nowrap>Fecha de aplicación</th>
                         <th nowrap>Fecha siguiente desparasitación</th>
                     </tr>
                 </thead>
@@ -279,6 +282,7 @@
                     @foreach($clinicHistory->dewormings as $deworming)
                     <tr>
                         <td>{{ $deworming->product->name }}</td>
+                        <td nowrap>{{ $deworming->application_date }}</td>
                         <td nowrap>{{ $deworming->next_date }}</td>
                     </tr>
                     @endforeach

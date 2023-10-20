@@ -12,6 +12,8 @@ class Deworming extends Model
     protected $fillable = [
         'pet_id',
         'product_id',
+        'registration_date',
+        'application_date',
         'next_date',
         'user_id'
     ];

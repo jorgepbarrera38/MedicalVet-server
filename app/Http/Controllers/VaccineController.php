@@ -51,14 +51,18 @@ class VaccineController extends Controller
         $data = $request->validate([
             'pet_id' => 'required|exists:pets,id',
             'product_id' => 'required|exists:products,id',
+            'application_date' => 'required|date',
             'next_date' => 'required|date|after_or_equal:today',
         ], [
             'next_date.after_or_equal' => 'El campo Próxima vacuna debe ser igual o superior a la fecha actual'
         ], [
             'pet_id' => 'Mascota',
             'product_id' => 'Vacuna',
+            'application_date' => 'Fecha de aplicación',
             'next_date' => 'Próxima vacuna'
         ]);
+
+        $data['registration_date'] = now();
 
         \DB::transaction(function () use ($data) {
 

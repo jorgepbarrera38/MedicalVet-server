@@ -103,7 +103,7 @@
                 @foreach($vaccines as $vaccine)
                 <tr>
                     <td>{{ $vaccine->product->name }}</td>
-                    <td nowrap>{{ $vaccine->clinicHistory ? $vaccine->clinicHistory->created_at : $vaccine->created_at }}</td>
+                    <td nowrap>{{ $vaccine->application_date }}</td>
                     <td nowrap>{{ $vaccine->next_date }}</td>
                 </tr>
                 @endforeach
@@ -127,7 +127,7 @@
                 @foreach($dewormings as $deworming)
                 <tr>
                     <td>{{ $deworming->product->name }}</td>
-                    <td nowrap>{{ $deworming->clinicHistory ? $deworming->clinicHistory->created_at : $deworming->created_at }}</td>
+                    <td nowrap>{{ $deworming->application_date }}</td>
                     <td nowrap>{{ $deworming->next_date }}</td>
                 </tr>
                 @endforeach

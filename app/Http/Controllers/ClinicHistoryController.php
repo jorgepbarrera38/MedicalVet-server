@@ -204,10 +204,12 @@ class ClinicHistoryController extends Controller
             'diagnoses.*.type' => ['required', Rule::in(['Presuntivo', 'Definitivo'])],
             'vaccines' => 'array',
             'vaccines.*.product_id' => 'required|exists:products,id',
+            'vaccines.*.application_date' => 'required|date',
             'vaccines.*.next_date' => 'required|date|after_or_equal:today',
             'dewormings' => 'array',
             'dewormings.*.product_id' => 'required|exists:products,id',
-            'dewormings.*.next_date' => 'required|after_or_equal:today',
+            'dewormings.*.application_date' => 'required|date',
+            'dewormings.*.next_date' => 'required|date|after_or_equal:today',
             'products' => 'array',
             'products.*.product_id' => 'required|exists:products,id',
             'products.*.quantity' => 'required|numeric|min:0.0001|max:1000',
@@ -354,6 +356,8 @@ class ClinicHistoryController extends Controller
                     return [
                             'pet_id' => $clinicHistory->pet_id,
                             'product_id' => $item['product_id'],
+                            'registration_date' => $clinicHistory->created_at,
+                            'application_date' => $item['application_date'],
                             'next_date' => $item['next_date'],
                             'user_id' => auth()->user()->id,
                         ];
@@ -385,6 +389,8 @@ class ClinicHistoryController extends Controller
                     return [
                             'pet_id' => $clinicHistory->pet_id,
                             'product_id' => $item['product_id'],
+                            'registration_date' => $clinicHistory->created_at,
+                            'application_date' => $item['application_date'],
                             'next_date' => $item['next_date'],
                             'user_id' => auth()->user()->id,
                         ];

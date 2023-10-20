@@ -43,14 +43,18 @@ class DewormingController extends Controller
         $data = $request->validate([
             'pet_id' => 'required|exists:pets,id',
             'product_id' => 'required|exists:products,id',
+            'application_date' => 'required|date',
             'next_date' => 'required|date|after_or_equal:today',
         ], [
             'next_date.after_or_equal' => 'El campo Próxima desparasitación debe ser igual o superior a la fecha actual'
         ], [
             'pet_id' => 'Mascota',
             'product_id' => 'Desparasitante',
+            'application_date' => 'Fecha de aplicación',
             'next_date' => 'Próxima desparasitación'
         ]);
+
+        $data['registration_date'] = now();
 
         \DB::transaction(function () use ($data) {
 
