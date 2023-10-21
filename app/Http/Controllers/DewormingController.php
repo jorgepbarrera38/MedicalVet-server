@@ -61,7 +61,7 @@ class DewormingController extends Controller
             $productDB = Product::find($data['product_id']);
             $petDB = Pet::find($data['pet_id']);
 
-            BillingPendingBilling::create([
+            $billingPendingBilling = BillingPendingBilling::create([
                 'datetime' => now(),
                 'code' => $productDB->code,
                 'description' => $productDB->name,
@@ -72,6 +72,8 @@ class DewormingController extends Controller
                 'owner_id' => $petDB->owner_id,
                 'pet_id' => $petDB->id,
             ]);
+
+            $data['billing_pending_billing_id'] = $billingPendingBilling->id;
 
             auth()->user()->dewormings()->create($data);
         });
@@ -134,20 +136,35 @@ class DewormingController extends Controller
      */
     public function destroy(Deworming $deworming)
     {
-        //Para eliminar vacuna registrada desde HC
-        if ($deworming->clinic_history_id) {
-            if (auth()->user()->id != $deworming->clinicHistory->user_id) {
-                return response()->json(['message' => 'Forbidden action'], 403);
+        $billingPendingBillingId = null;
+        //Validando si el desparasitante está relacionada con un registro de pendientes por facturar
+        if ($deworming->billingPendingBilling) {
+            //Validando que el registro pendiente por facturar no se encuentre facturado
+            //Si el pendiente se encuentra facturado
+            if ($deworming->billingPendingBilling->billed) {
+                $number_bill = $deworming->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+                return response()->json(['El desparasitante no se puede eliminar ya que se encuentra facturado en la factura No.: ' . $number_bill], 422);
             }
-            $deworming->delete();
-            return response()->json(['message' => 'Deworming deleted'], 200);
+
+            //Si el pendiente NO se encuentra facturado, se guarda su id para su eliminación al final por integridad referencial
+            $billingPendingBillingId = $deworming->billingPendingBilling->id;
+        }
+        
+        if (auth()->user()->id != $deworming->user_id) {
+            return response()->json(['Solo puede eliminar sus propios registros'], 403);
         }
 
-        //Para eliminar vacuna registrada desde Vacunación y desparasitación
-        if (auth()->user()->id != $deworming->user_id) {
-            return response()->json(['message' => 'Forbidden action'], 403);
-        }
-        $deworming->delete();
+        \DB::transaction(function () use ($deworming, $billingPendingBillingId) {
+
+            $deworming->delete();
+
+            //Se verifica si se encontró un pendiente y se elimina
+            if ($billingPendingBillingId) {
+                BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
+            }
+            
+        });
+
         return response()->json(['message' => 'Deworming deleted'], 200);
     }
 }

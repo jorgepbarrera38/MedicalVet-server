@@ -15,7 +15,8 @@ class Deworming extends Model
         'registration_date',
         'application_date',
         'next_date',
-        'user_id'
+        'user_id',
+        'billing_pending_billing_id'
     ];
 
     public function product () {
@@ -28,5 +29,9 @@ class Deworming extends Model
 
     public function user () {
         return $this->belongsTo('App\Models\User');
+    }
+
+    public function billingPendingBilling () {
+        return $this->belongsTo('App\Models\BillingPendingBilling');
     }
 }

@@ -380,8 +380,6 @@ class ClinicHistoryController extends Controller
                     ]);
 
                     $vaccines[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
-                    \Log::info($vaccine);
-                    \Log::info($vaccines);
                 }
 
                 //Registrando las vacunas en la tabla de vacunas realizadas
@@ -401,13 +399,11 @@ class ClinicHistoryController extends Controller
                         ];
                 })->toArray();
 
-                $clinicHistory->dewormings()->createMany($dewormings);
-
                 /*Agregando los desparasitantes a "pendientes por facturar"*/
-                foreach ($dewormings as $deworming) {
+                foreach ($dewormings as $key => $deworming) {
                     $productDB = Product::find($deworming['product_id']);
 
-                    BillingPendingBilling::create([
+                    $billingPendingBilling = BillingPendingBilling::create([
                     'datetime' => now(),
                     'code' => $productDB->code,
                     'description' => $productDB->name,
@@ -418,7 +414,11 @@ class ClinicHistoryController extends Controller
                     'owner_id' => $clinicHistory->pet->owner_id,
                     'pet_id' => $clinicHistory->pet_id,
                     ]);
+
+                    $dewormings[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
                 }
+
+                $clinicHistory->dewormings()->createMany($dewormings);
             }
 
             //Registro de productos y servicios aplicados
