@@ -101,11 +101,13 @@ class DewormingController extends Controller
     {
         $data = $request->validate([
             'product_id' => 'required|exists:products,id',
+            'application_date' => 'required|date',
             'next_date' => 'required|date|after_or_equal:today',
         ], [
             'next_date.after_or_equal' => 'El campo Próxima vacuna debe ser igual o superior a la fecha actual'
         ], [
             'product_id' => 'Vacuna',
+            'application_date' => 'Fecha de aplicación',
             'next_date' => 'Próxima vacuna',
         ]);
 
