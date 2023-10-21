@@ -98,7 +98,7 @@ class ClinicHistoryController extends Controller
                                                         $query->where('pet_id', $pet);
                                                     })
                                             ->with('clinicHistory:id,number_folio,created_at')
-                                            ->latest()->take(10)->get();                                
+                                            ->latest()->take(10)->get();
 
         //Datos para diligenciar la historia clínica
         $diagnoses = Diagnosis::orderBy('name')->get(['id', 'name']);
@@ -107,7 +107,7 @@ class ClinicHistoryController extends Controller
         $services = Service::orderBy('name')->get(['id', 'name']);
         $dewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);
 
-        
+
         $dewormingsCountTotalFromPet = Deworming::where('pet_id', $pet)->count();
         $vaccinesCountTotalFromPet = Vaccine::where('pet_id', $pet)->count();
 
@@ -150,10 +150,10 @@ class ClinicHistoryController extends Controller
             } else if ($appointment->state != 'PENDIENTE') {
                 return response()->json(['errors' => ['appointment_is_not_pending' => ['La cita se encuentra en estado: ' . $appointment->state]]], 422);
             } else {
-                
+
             }
         }
-        
+
         $consultationPurposes = ConsultationPurposes::where('id', $request->consultation_purposes_id)->firstOrFail();
 
         $data = $request->validate([
@@ -169,7 +169,7 @@ class ClinicHistoryController extends Controller
             'physiologicalConstants.heart_rate' => ['nullable', 'numeric', 'min:1', 'max:500', Rule::requiredIf($consultationPurposes->physiological_constants)],
             'physiologicalConstants.breathing_frequency' => ['nullable', 'numeric', 'min:1', 'max:500', Rule::requiredIf($consultationPurposes->physiological_constants)],
 
-            
+
             'reviewBySystems.respiratorySystem.state' => ['nullable', Rule::in(['Normal', 'Anormal']), Rule::requiredIf($consultationPurposes->review_by_systems)],
             'reviewBySystems.respiratorySystem.observations' => 'nullable|max:1000|required_if:reviewBySystems.respiratorySystem.state,Anormal',
 
@@ -267,7 +267,7 @@ class ClinicHistoryController extends Controller
             'reviewBySystems.oralCavity.observations.required_if' => 'Ingrese las observaciónes',
             'reviewBySystems.oralCavity.observations.max' => 'Las observaciónes no debe superar los 1000 caracteres',
 
-            
+
 
             'records.*.description.max' => 'La descripción del antecedente no debe ser mayor a 100 caracteres',
             'vaccines.*.next_date.after_or_equal' => 'La fecha de la próxima vacuna debe ser posterior o igual a la fecha actual',
@@ -287,15 +287,15 @@ class ClinicHistoryController extends Controller
             'physiologicalConstants.breathing_frequency' => 'Frecuencia respiratoria',
             'observations_from_prescription' => 'Observaciónes',
         ]);
-        
-        
+
+
         $data['user_id'] = auth()->user()->id;
 
         \DB::transaction(function () use ($data, $request, $consultationPurposes, $appointment) {
-        
+
             //Registro de historia clínica
             $clinicHistory = (new ClinicHistory)->fill($data);
-            
+
             $clinicHistoryFromPet = ClinicHistory::where('pet_id', $request->pet_id)->latest()->first();
 
             if ($clinicHistoryFromPet) {
@@ -303,7 +303,7 @@ class ClinicHistoryController extends Controller
             } else {
                 $clinicHistory->number_folio = 1;
             }
-            
+
             $clinicHistory->save();
 
             //Registro de revisión por sistemas
@@ -346,7 +346,7 @@ class ClinicHistoryController extends Controller
                 $diagnoses = collect($request->diagnoses)->map(function ($item) {
                     return ['diagnosis_id' => $item['diagnosis_id'], 'type' => $item['type']];
                 })->toArray();
-        
+
                 $clinicHistory->diagnoses()->createMany($diagnoses);
             }
 
@@ -362,14 +362,12 @@ class ClinicHistoryController extends Controller
                             'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
-        
-                $clinicHistory->vaccines()->createMany($vaccines);
 
-                /*Agregando las vacunas a "pendientes por facturar"*/
-                foreach ($vaccines as $vaccine) {
+                /*Registrando las vacunas en "pendientes por facturar"*/
+                foreach ($vaccines as $key => $vaccine) {
                     $productDB = Product::find($vaccine['product_id']);
 
-                    BillingPendingBilling::create([
+                    $billingPendingBilling = BillingPendingBilling::create([
                     'datetime' => now(),
                     'code' => $productDB->code,
                     'description' => $productDB->name,
@@ -380,7 +378,14 @@ class ClinicHistoryController extends Controller
                     'owner_id' => $clinicHistory->pet->owner_id,
                     'pet_id' => $clinicHistory->pet_id,
                     ]);
+
+                    $vaccines[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
+                    \Log::info($vaccine);
+                    \Log::info($vaccines);
                 }
+
+                //Registrando las vacunas en la tabla de vacunas realizadas
+                $clinicHistory->vaccines()->createMany($vaccines);
             }
 
             //Registro de desparacitasiónes
@@ -395,7 +400,7 @@ class ClinicHistoryController extends Controller
                             'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
-        
+
                 $clinicHistory->dewormings()->createMany($dewormings);
 
                 /*Agregando los desparasitantes a "pendientes por facturar"*/
@@ -425,7 +430,7 @@ class ClinicHistoryController extends Controller
                             'observations' => $item['observations']
                         ];
                 })->toArray();
-        
+
                 $clinicHistory->products()->createMany($productsApplied);
 
                 /*Agregando los productos a "pendientes por facturar"*/
@@ -443,7 +448,7 @@ class ClinicHistoryController extends Controller
                     'owner_id' => $clinicHistory->pet->owner_id,
                     'pet_id' => $clinicHistory->pet_id,
                     ]);
-                
+
                 }
 
                 $servicesApplied = collect($request->services)->map(function ($item) {
@@ -454,7 +459,7 @@ class ClinicHistoryController extends Controller
                         ];
                 })->toArray();
 
-                
+
                 $clinicHistory->services()->createMany($servicesApplied);
 
                 /*Agregando los servicios a pendientes por facturar*/
@@ -473,10 +478,10 @@ class ClinicHistoryController extends Controller
                     'owner_id' => $clinicHistory->pet->owner_id,
                     'pet_id' => $clinicHistory->pet_id,
                     ]);
-                
+
                 }
-            }  
- 
+            }
+
             //Archivos adjuntos
             if ($consultationPurposes->attachments) {
                 if ($request->attachments) {
@@ -487,14 +492,14 @@ class ClinicHistoryController extends Controller
                                                                                     'attachment_type_id' => $attachment['attachment_type_id']
                                                                                     ]);
                                                                                     $clinicHistoryAttachment->file = $path;
-                        $clinicHistoryAttachment->save();                                                                            
+                        $clinicHistoryAttachment->save();
                     }
                 }
             }
-                
+
             //Registro de receta veterinaria
             if ($consultationPurposes->prescription && ($request->observations_from_prescription || collect($request->products_from_prescription)->count())) {
-            
+
                 $clinicHistoryPrescription = $clinicHistory->clinicHistoryPrescription()->create(['observations' => $request->observations_from_prescription]);
 
                 $productsFromPrescription = collect($request->products_from_prescription)->map(function ($item) {
@@ -502,10 +507,10 @@ class ClinicHistoryController extends Controller
                             'product_id' => $item['product_id'],
                             'quantity' => $item['quantity'],
                             'posology' => $item['posology'],
-                            
+
                         ];
                 })->toArray();
-        
+
                 $clinicHistoryPrescription->clinicHistoryPrescriptionDetails()->createMany($productsFromPrescription);
             }
 
@@ -528,15 +533,15 @@ class ClinicHistoryController extends Controller
     public function deleteProductApplication(ClinicHistoryProduct $clinicHistoryProduct)
     {
         if ($parameters = Parameter::first()) {
-            
+
             $diffInHoursFromFolioAndNow = $clinicHistoryProduct->clinicHistory->created_at->diffInHours(\Carbon\Carbon::now());
 
             if ($diffInHoursFromFolioAndNow >= $parameters->hours_products_and_services_applied) {
                 $text = $parameters->hours_products_and_services_applied == 1 ? 'hora' : 'horas';
 
                 return response()
-                    ->json(['message' => 'El tiempo límite para actualizar es de ' 
-                                            . $parameters->hours_products_and_services_applied 
+                    ->json(['message' => 'El tiempo límite para actualizar es de '
+                                            . $parameters->hours_products_and_services_applied
                                             . ' ' . $text ],422);
             }
 
@@ -552,15 +557,15 @@ class ClinicHistoryController extends Controller
     public function updateProductApplication(ClinicHistoryProduct $clinicHistoryProduct, Request $request)
     {
         if ($parameters = Parameter::first()) {
-            
+
             $diffInHoursFromFolioAndNow = $clinicHistoryProduct->clinicHistory->created_at->diffInHours(\Carbon\Carbon::now());
 
             if ($diffInHoursFromFolioAndNow >= $parameters->hours_products_and_services_applied) {
                 $text = $parameters->hours_products_and_services_applied == 1 ? 'hora' : 'horas';
 
                 return response()
-                    ->json(['message' => 'El tiempo límite para actualizar es de ' 
-                                            . $parameters->hours_products_and_services_applied 
+                    ->json(['message' => 'El tiempo límite para actualizar es de '
+                                            . $parameters->hours_products_and_services_applied
                                             . ' ' . $text ],422);
             }
 
@@ -582,15 +587,15 @@ class ClinicHistoryController extends Controller
     public function deleteServiceApplication(ClinicHistoryService $clinicHistoryService)
     {
         if ($parameters = Parameter::first()) {
-            
+
             $diffInHoursFromFolioAndNow = $clinicHistoryService->clinicHistory->created_at->diffInHours(\Carbon\Carbon::now());
 
             if ($diffInHoursFromFolioAndNow >= $parameters->hours_products_and_services_applied) {
                 $text = $parameters->hours_products_and_services_applied == 1 ? 'hora' : 'horas';
 
                 return response()
-                    ->json(['message' => 'El tiempo límite para actualizar es de ' 
-                                            . $parameters->hours_products_and_services_applied 
+                    ->json(['message' => 'El tiempo límite para actualizar es de '
+                                            . $parameters->hours_products_and_services_applied
                                             . ' ' . $text ],422);
             }
 
@@ -606,20 +611,20 @@ class ClinicHistoryController extends Controller
     public function updateServiceApplication(ClinicHistoryService $clinicHistoryService, Request $request)
     {
         if ($parameters = Parameter::first()) {
-            
+
             $diffInHoursFromFolioAndNow = $clinicHistoryService->clinicHistory->created_at->diffInHours(\Carbon\Carbon::now());
 
             if ($diffInHoursFromFolioAndNow >= $parameters->hours_products_and_services_applied) {
                 $text = $parameters->hours_products_and_services_applied == 1 ? 'hora' : 'horas';
 
                 return response()
-                    ->json(['message' => 'El tiempo límite para actualizar es de ' 
-                                            . $parameters->hours_products_and_services_applied 
+                    ->json(['message' => 'El tiempo límite para actualizar es de '
+                                            . $parameters->hours_products_and_services_applied
                                             . ' ' . $text ],422);
             }
 
         }
-        
+
         $request->validate([
             'quantity' => 'required|numeric|min:1'
         ]);
@@ -655,15 +660,15 @@ class ClinicHistoryController extends Controller
             $request->validate([
                 'folios' => 'required|array'
             ]);
-    
+
             $folios = [];
-    
+
             if ($request->folios[0] == 'latest') {
                 $folios[0] = ClinicHistory::where('pet_id', $pet)->latest()->first()->number_folio;
             } else {
                 $folios = $request->folios;
             }
-            
+
             $clinicHistoriesFromPet = Pet::where('id', $pet->id)
                                                             ->with('species')
                                                             ->with('owner')
@@ -675,22 +680,22 @@ class ClinicHistoryController extends Controller
                                                             ->with('clinicHistories.dewormings')
                                                             ->with('clinicHistories.dewormings.product')
                                                             ->with('clinicHistories.products')
-                                                            ->with('clinicHistories.services')  
+                                                            ->with('clinicHistories.services')
                                                             ->with(['clinicHistories' => function ($query) use ($folios) {
                                                                 $query->whereIn('number_folio', $folios);
                                                             }])
-                                                            ->first(); 
-            
+                                                            ->first();
+
             if (!$clinicHistoriesFromPet->clinicHistories()->exists()) {
                 return response()->json(['message' => 'No hay folios de historia clínica'], 422);
             }
-    
+
             $pdf = \PDF::loadView('reports.clinic-history', compact('clinicHistoriesFromPet', 'company'));
             Storage::put('temp.pdf', $pdf->output());
             //Fin buscando folios y guardandolos como temporal
-            
+
             Mail::to($pet->owner->email)->send(new SendClinicHistory($company, $pet->name, $pet->owner, 'historia clínica'));
-    
+
             return "Enviado";
 
         } else {

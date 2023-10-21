@@ -19,4 +19,8 @@ class BillingBillDetail extends Model
         'quantity',
         'billing_pending_billing_id',
     ];
+
+    public function billingBill () {
+        return $this->belongsTo('App\Models\BillingBill');
+    }
 }

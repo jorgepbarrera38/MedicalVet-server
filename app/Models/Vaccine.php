@@ -15,7 +15,8 @@ class Vaccine extends Model
         'registration_date',
         'application_date',
         'next_date',
-        'user_id'
+        'user_id',
+        'billing_pending_billing_id'
     ];
 
     public function product () {
@@ -32,5 +33,9 @@ class Vaccine extends Model
 
     public function pet () {
         return $this->belongsTo('App\Models\Pet');
+    }
+
+    public function billingPendingBilling () {
+        return $this->belongsTo('App\Models\BillingPendingBilling');
     }
 }

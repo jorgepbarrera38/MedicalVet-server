@@ -100,7 +100,6 @@ class DewormingController extends Controller
     public function update(Request $request, Deworming $deworming)
     {
         $data = $request->validate([
-            'product_id' => 'required|exists:products,id',
             'application_date' => 'required|date',
             'next_date' => 'required|date|after_or_equal:today',
         ], [

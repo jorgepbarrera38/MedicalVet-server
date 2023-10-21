@@ -64,12 +64,13 @@ class VaccineController extends Controller
 
         $data['registration_date'] = now();
 
+
         \DB::transaction(function () use ($data) {
 
             $productDB = Product::find($data['product_id']);
             $petDB = Pet::find($data['pet_id']);
 
-            BillingPendingBilling::create([
+            $billingPendingBilling = BillingPendingBilling::create([
                 'datetime' => now(),
                 'code' => $productDB->code,
                 'description' => $productDB->name,
@@ -80,6 +81,8 @@ class VaccineController extends Controller
                 'owner_id' => $petDB->owner_id,
                 'pet_id' => $petDB->id,
             ]);
+
+            $data['billing_pending_billing_id'] = $billingPendingBilling->id;
 
             auth()->user()->vaccines()->create($data);
         });
@@ -120,7 +123,6 @@ class VaccineController extends Controller
     public function update(Request $request, Vaccine $vaccine)
     {
         $data = $request->validate([
-            'product_id' => 'required|exists:products,id',
             'application_date' => 'required|date',
             'next_date' => 'required|date|after_or_equal:today',
         ], [
@@ -155,20 +157,35 @@ class VaccineController extends Controller
      */
     public function destroy(Vaccine $vaccine)
     {
-        //Para eliminar vacuna registrada desde HC
-        if ($vaccine->clinic_history_id) {
-            if (auth()->user()->id != $vaccine->clinicHistory->user_id) {
-                return response()->json(['message' => 'Forbidden action'], 403);
+        $billingPendingBillingId = null;
+        //Validando si la vacuna está relacionada con un registro de pendiente por facturar
+        if ($vaccine->billingPendingBilling) {
+            //Validando que el registro pendiente por facturar no se encuentre facturado
+            //Si el pendiente se encuentra facturado
+            if ($vaccine->billingPendingBilling->billed) {
+                $number_bill = $vaccine->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+                return response()->json(['La vacuna no se puede eliminar ya que se encuentra facturada en la factura No.: ' . $number_bill], 422);
             }
-            $vaccine->delete();
-            return response()->json(['message' => 'Vaccine deleted'], 200);
+
+            //Si el pendiente NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
+            $billingPendingBillingId = $vaccine->billingPendingBilling->id;
         }
 
-        //Para eliminar vacuna registrada desde Vacunación y desparasitación
         if (auth()->user()->id != $vaccine->user_id) {
-            return response()->json(['message' => 'Forbidden action'], 403);
+            return response()->json(['Solo puede eliminar sus propios registros'], 403);
         }
-        $vaccine->delete();
+
+        \DB::transaction(function () use ($vaccine, $billingPendingBillingId) {
+
+            $vaccine->delete();
+
+            //Se verifica si se encontró un pendiente y se elimina
+            if ($billingPendingBillingId) {
+                BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
+            }
+
+        });
+
         return response()->json(['message' => 'Vaccine deleted'], 200);
     }
 }

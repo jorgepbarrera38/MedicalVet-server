@@ -21,4 +21,8 @@ class BillingPendingBilling extends Model
         'pet_id',
         'billed'
     ];
+
+    public function billingBillDetail () {
+        return $this->hasOne('App\Models\BillingBillDetail');
+    }
 }
