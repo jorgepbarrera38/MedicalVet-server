@@ -259,9 +259,10 @@ class ReportController extends Controller
                                     ->with('service:id,name')
                                     ->with('clinicHistory:id,number_folio,created_at')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
-                                    ->whereHas('clinicHistory', function (Builder $query) {
+                                    /*->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
-                                    })
+                                    })*/
+                                    ->orderBy('id', 'desc')
                                     ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations']);
 
         $products = ClinicHistoryProduct::whereHas('clinicHistory', function (Builder $query) use ($pet) {
@@ -270,9 +271,10 @@ class ReportController extends Controller
                                     ->with('product:id,name')
                                     ->with('clinicHistory:id,number_folio,created_at,user_id')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
-                                    ->whereHas('clinicHistory', function (Builder $query) {
+                                    /*->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
-                                    })
+                                    })*/
+                                    ->orderBy('id', 'desc')
                                     ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations']);   
                                     
         return [
@@ -291,9 +293,9 @@ class ReportController extends Controller
                                     ->with('service:id,name')
                                     ->with('clinicHistory:id,number_folio,created_at')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
-                                    ->whereHas('clinicHistory', function (Builder $query) {
+                                    /*->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
-                                    })
+                                    })*/
                                     ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations']);
 
         $products = ClinicHistoryProduct::whereHas('clinicHistory', function (Builder $query) use ($pet) {
@@ -302,9 +304,9 @@ class ReportController extends Controller
                                     ->with('product:id,name')
                                     ->with('clinicHistory:id,number_folio,created_at,user_id')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
-                                    ->whereHas('clinicHistory', function (Builder $query) {
+                                    /*->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
-                                    })
+                                    })*/
                                     ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations']);   
                                     
         $company = Company::first();
