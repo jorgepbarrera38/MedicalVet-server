@@ -90,7 +90,7 @@
         <!--Vacunas-->
         <table border="1" style="border-collapse:collapse;margin-top:20px" width="100%">
                 <tr>
-                    <td colspan="5" nowrap>
+                    <td colspan="4" nowrap>
                         <center><strong>PRODUCTOS<strong></center>
                     </td>
                 </tr>
