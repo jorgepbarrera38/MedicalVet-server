@@ -12,7 +12,8 @@ class ClinicHistoryService extends Model
     protected $fillable = [
         'service_id',
         'quantity',
-        'observations'
+        'observations',
+        'billing_pending_billing_id',
     ];
 
     public function service () {
@@ -21,5 +22,9 @@ class ClinicHistoryService extends Model
 
     public function clinicHistory () {
         return $this->belongsTo('App\Models\ClinicHistory');
+    }
+
+    public function billingPendingBilling () {
+        return $this->belongsTo('App\Models\BillingPendingBilling');
     }
 }

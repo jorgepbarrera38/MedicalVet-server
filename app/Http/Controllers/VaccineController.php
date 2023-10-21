@@ -157,8 +157,9 @@ class VaccineController extends Controller
      */
     public function destroy(Vaccine $vaccine)
     {
-        $billingPendingBillingId = null;
         //Validando si la vacuna está relacionada con un registro de pendiente por facturar
+        $billingPendingBillingId = null;
+        
         if ($vaccine->billingPendingBilling) {
             //Validando que el registro pendiente por facturar no se encuentre facturado
             //Si el pendiente se encuentra facturado

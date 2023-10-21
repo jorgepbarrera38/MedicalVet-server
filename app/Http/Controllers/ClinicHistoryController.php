@@ -431,25 +431,29 @@ class ClinicHistoryController extends Controller
                         ];
                 })->toArray();
 
-                $clinicHistory->products()->createMany($productsApplied);
-
                 /*Agregando los productos a "pendientes por facturar"*/
-                foreach ($productsApplied as $productApplied) {
+                foreach ($productsApplied as $key => $productApplied) {
                     $productDB = Product::find($productApplied['product_id']);
 
-                    BillingPendingBilling::create([
-                    'datetime' => now(),
-                    'code' => $productDB->code,
-                    'description' => $productDB->name,
-                    'product_id' => $productDB->id,
-                    'service_id' => null,
-                    'price' => $productDB->price,
-                    'quantity' => $productApplied['quantity'],
-                    'owner_id' => $clinicHistory->pet->owner_id,
-                    'pet_id' => $clinicHistory->pet_id,
+                    $billingPendingBilling = BillingPendingBilling::create([
+                            'datetime' => now(),
+                            'code' => $productDB->code,
+                            'description' => $productDB->name,
+                            'product_id' => $productDB->id,
+                            'service_id' => null,
+                            'price' => $productDB->price,
+                            'quantity' => $productApplied['quantity'],
+                            'owner_id' => $clinicHistory->pet->owner_id,
+                            'pet_id' => $clinicHistory->pet_id,
                     ]);
 
+                    $productsApplied[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
+
                 }
+
+                $clinicHistory->products()->createMany($productsApplied);
+
+
 
                 $servicesApplied = collect($request->services)->map(function ($item) {
                     return [
@@ -459,27 +463,27 @@ class ClinicHistoryController extends Controller
                         ];
                 })->toArray();
 
-
-                $clinicHistory->services()->createMany($servicesApplied);
-
                 /*Agregando los servicios a pendientes por facturar*/
-
-                foreach ($servicesApplied as $serviceApplied) {
+                foreach ($servicesApplied as $key => $serviceApplied) {
                     $serviceDB = Service::find($serviceApplied['service_id']);
 
-                    BillingPendingBilling::create([
-                    'datetime' => now(),
-                    'code' => $serviceDB->code,
-                    'description' => $serviceDB->name,
-                    'product_id' => null,
-                    'service_id' => $serviceDB->id,
-                    'price' => $serviceDB->price,
-                    'quantity' => $serviceApplied['quantity'],
-                    'owner_id' => $clinicHistory->pet->owner_id,
-                    'pet_id' => $clinicHistory->pet_id,
-                    ]);
+                    $billingPendingBilling = BillingPendingBilling::create([
+                                                'datetime' => now(),
+                                                'code' => $serviceDB->code,
+                                                'description' => $serviceDB->name,
+                                                'product_id' => null,
+                                                'service_id' => $serviceDB->id,
+                                                'price' => $serviceDB->price,
+                                                'quantity' => $serviceApplied['quantity'],
+                                                'owner_id' => $clinicHistory->pet->owner_id,
+                                                'pet_id' => $clinicHistory->pet_id,
+                                            ]);
+
+                    $servicesApplied[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
 
                 }
+
+                $clinicHistory->services()->createMany($servicesApplied);
             }
 
             //Archivos adjuntos
@@ -546,12 +550,38 @@ class ClinicHistoryController extends Controller
             }
 
         }
+
+        //Validando si la vacuna está relacionada con un registro de pendiente por facturar
+        $billingPendingBillingId = null;
+
+        if ($clinicHistoryProduct->billingPendingBilling) {
+            //Validando que el registro pendiente por facturar no se encuentre facturado
+            //Si el pendiente se encuentra facturado
+            if ($clinicHistoryProduct->billingPendingBilling->billed) {
+                $number_bill = $clinicHistoryProduct->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+                return response()->json(['message' => 'El producto no se puede eliminar ya que se encuentra facturada en la factura No.: ' . $number_bill],422);
+            }
+
+            //Si el pendiente NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
+            $billingPendingBillingId = $clinicHistoryProduct->billingPendingBilling->id;
+        }
+
         //Verifcar que el usuario que intenta eliminar sea el mismo que creó el folio
-        if (auth()->user()->id == $clinicHistoryProduct->clinicHistory->user_id) {
-            $clinicHistoryProduct->delete();
-        } else {
+        if (auth()->user()->id != $clinicHistoryProduct->clinicHistory->user_id) {
             return response()->json(['message' => 'Solo el usuario que registró la aplicación puede eliminarla'],422);
         }
+
+        \DB::transaction(function() use ($clinicHistoryProduct, $billingPendingBillingId) {
+
+            $clinicHistoryProduct->delete();
+
+            //Se verifica si se encontró un pendiente y se elimina
+            if ($billingPendingBillingId) {
+                BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
+            }
+
+        });
+
     }
 
     public function updateProductApplication(ClinicHistoryProduct $clinicHistoryProduct, Request $request)
@@ -600,12 +630,38 @@ class ClinicHistoryController extends Controller
             }
 
         }
+
+        //Validando si la vacuna está relacionada con un registro de pendiente por facturar
+        $billingPendingBillingId = null;
+
+        if ($clinicHistoryService->billingPendingBilling) {
+            //Validando que el registro pendiente por facturar no se encuentre facturado
+            //Si el pendiente se encuentra facturado
+            if ($clinicHistoryService->billingPendingBilling->billed) {
+                $number_bill = $clinicHistoryService->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+                return response()->json(['message' => 'La vacuna no se puede eliminar ya que se encuentra facturada en la factura No.: ' . $number_bill],422);
+            }
+
+            //Si el pendiente NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
+            $billingPendingBillingId = $clinicHistoryService->billingPendingBilling->id;
+        }
+
         //Verifcar que el usuario que intenta eliminar sea el mismo que creó el folio
-        if (auth()->user()->id == $clinicHistoryService->clinicHistory->user_id) {
-            $clinicHistoryService->delete();
-        } else {
+        if (auth()->user()->id != $clinicHistoryService->clinicHistory->user_id) {
             return response()->json(['message' => 'Solo el usuario que registró la aplicación puede eliminarla'],422);
         }
+
+        \DB::transaction(function () use ($clinicHistoryService, $billingPendingBillingId) {
+
+            $clinicHistoryService->delete();
+
+            //Se verifica si se encontró un pendiente y se elimina
+            if ($billingPendingBillingId) {
+                BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
+            }
+
+        });
+
     }
 
     public function updateServiceApplication(ClinicHistoryService $clinicHistoryService, Request $request)
