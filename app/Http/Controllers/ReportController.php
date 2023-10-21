@@ -136,14 +136,14 @@ class ReportController extends Controller
                         ->with('product:id,name')
                         ->with('clinicHistory.user:id,identification,username,names,surnames')
                         ->orderBy('id')
-                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at']);
+                        ->get(['id', 'clinic_history_id', 'product_id', 'registration_date', 'application_date',  'next_date', 'created_at']);
 
         $dewormings = Deworming::where('pet_id', $pet->id)
                         ->with('clinicHistory:id,number_folio,created_at')
                         ->with('product:id,name')
                         ->with('clinicHistory.user:id,identification,username,names,surnames')
                         ->orderBy('id')
-                        ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at']);
+                        ->get(['id', 'clinic_history_id', 'product_id', 'registration_date', 'application_date', 'next_date', 'created_at']);
                         
         $company = Company::first();
 
@@ -162,14 +162,14 @@ class ReportController extends Controller
                             ->with('product:id,name')
                             ->with('clinicHistory.user:id,identification,username,names,surnames')
                             ->orderBy('id')
-                            ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at']);
+                            ->get(['id', 'clinic_history_id', 'product_id', 'registration_date', 'application_date', 'next_date', 'created_at']);
 
             $dewormings = Deworming::where('pet_id', $pet->id)
                             ->with('clinicHistory:id,number_folio,created_at')
                             ->with('product:id,name')
                             ->with('clinicHistory.user:id,identification,username,names,surnames')
                             ->orderBy('id')
-                            ->get(['id', 'clinic_history_id', 'product_id', 'next_date', 'created_at']);
+                            ->get(['id', 'clinic_history_id', 'product_id', 'registration_date', 'application_date', 'next_date', 'created_at']);
 
             //Verificando que el propietario tenga correo
             if (!$pet->owner->email) {
