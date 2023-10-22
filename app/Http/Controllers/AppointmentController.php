@@ -48,8 +48,8 @@ class AppointmentController extends Controller
     }
 
     public function getAppointments (Pet $pet) {
-        //return $pet->appointments()->with(['consultingroom:id,name', 'activity:id,name'])->where('state', 'PENDIENTE')->get();
-        return $pet->appointments()->with(['consultingroom:id,name', 'activity:id,name'])->get();
+        
+        return $pet->appointments()->with(['consultingroom:id,name', 'activity:id,name'])->orderBy('date_time_start', 'desc')->get();
     }
 
     public function store (Request $request) {
