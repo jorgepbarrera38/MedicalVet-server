@@ -11,10 +11,15 @@ class Activity extends Model
 
     protected $fillable = [
         'name',
-        'duration'
+        'duration',
+        'service_id',
     ];
 
     public function appointments () {
         return $this->hasMany('App\Models\Appointment');
+    }
+
+    public function service () {
+        return $this->belongsTo('App\Models\Service');
     }
 }

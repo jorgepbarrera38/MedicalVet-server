@@ -61,7 +61,10 @@ Route::middleware('auth')->group(function () {
 
     Route::get('consultingrooms/get-quantity-consultingrooms-created', 'ConsultingroomController@getQuantityConsultingroomsCreated');
     Route::apiResource('consultingrooms', 'ConsultingroomController');
+
+    Route::get('activities/get-services', 'ActivityController@getServices');
     Route::apiResource('activities', 'ActivityController');
+
     Route::apiResource('reason-cancellations', 'ReasonCancellationController');
 
     Route::get('appointments', 'AppointmentController@index');
