@@ -55,8 +55,13 @@ class BillingController extends Controller
             foreach ($request->productsAndServicesChecked as $productAndServiceChecked) {
                 $billingPendingBilling = BillingPendingBilling::find($productAndServiceChecked["id"]);
 
+                //Validando que el pendiente por facturar si pertenezca a la mascota
+                if ($billingPendingBilling->pet_id != $petSelected) {
+                    abort(422, 'El pendiente con id: ' . $billingPendingBilling->id . ' No pertenece a la mascota seleccionada');
+                }
+
                 if ($billingPendingBilling->billed) {
-                    abort(422, 'El pendiente con id:' . $billingPendingBilling->id . ' Ya se encuentra facturado');
+                    abort(422, 'El pendiente con id: ' . $billingPendingBilling->id . ' Ya se encuentra facturado');
                 }
 
                 \Log::info($billingPendingBilling);
