@@ -9,6 +9,7 @@ use App\Models\Pet;
 use App\Models\Company;
 use App\Models\Appointment;
 use App\Models\ReasonCancellation;
+use App\Models\BillingPendingBilling;
 use \Carbon\Carbon;
 
 class AppointmentController extends Controller
@@ -120,7 +121,28 @@ class AppointmentController extends Controller
             return response()->json(['errors' => ['message' => ['La cita aún no ha iniciado']]], 422);
         }
 
-        $appointment->update(['state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id]);
+        //Validando que la actividad tenga un servicio relacionado para agregarlo a pendiente por facturar
+        if (!$appointment->activity->service) {
+            return response()->json(['errors' => ['message' => ['La actividad no tiene servicio relacionado']]], 422);
+        }
+
+        \DB::transaction(function () use ($appointment) {
+
+            /*Generando suministro pendiente*/
+            $billingPendingBilling = BillingPendingBilling::create([
+                'datetime' => now(),
+                'code' => $appointment->activity->service->code,
+                'description' => $appointment->activity->service->name,
+                'product_id' => null,
+                'service_id' => $appointment->activity->service->id,
+                'price' => $appointment->activity->service->price,
+                'quantity' => 1,
+                'owner_id' => $appointment->pet->owner_id,
+                'pet_id' => $appointment->pet_id,
+            ]);
+            
+            $appointment->update(['state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id, 'billing_pending_billing_id' => $billingPendingBilling->id]);
+        });
     }
 
     //Incumplir cita

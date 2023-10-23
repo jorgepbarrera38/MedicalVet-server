@@ -23,7 +23,8 @@ class Appointment extends Model
         'user_id_unfulfill',
         'user_id_cancel',
         'reason_cancellation_id',
-        'clinic_history_id'
+        'clinic_history_id',
+        'billing_pending_billing_id',
     ];
 
     public function pet () {

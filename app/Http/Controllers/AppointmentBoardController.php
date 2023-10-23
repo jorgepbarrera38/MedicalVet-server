@@ -20,7 +20,7 @@ class AppointmentBoardController extends Controller
         $appointments = Appointment::with(['pet.owner:id,identification,names,surnames', 'pet:id,name,owner_id', 'activity:id,name', 'consultingroom:id,name'])
                                 ->where('state','PENDIENTE')
                                 ->select('id', 'pet_id', 'consultingroom_id', 'activity_id', 'date_time_start', 'duration', 'date_time_finish', 'state')
-                                ->orderBy('date_time_start', 'desc')
+                                ->orderBy('date_time_start', 'asc')
                             ->get();
 
         return $appointments;
