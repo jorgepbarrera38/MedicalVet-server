@@ -14,6 +14,19 @@ class PermissionTableSeeder extends Seeder
      */
     public function run()
     {
+        //Usuarios
+        $user = \App\Models\User::firstOrCreate([
+            'username' => 'admin'], [
+            'identification' => '1',
+            'names' => 'Administrador',
+            'surnames' => 'Usuario',
+            'is_vet' => true,
+            'password' => bcrypt('admin')
+        ]);
+
+        $user->permissions()->detach();
+
+        Permission::get()->each->delete();
         //Mascotas
         Permission::create([
             'name' => 'pets.index',
@@ -126,6 +139,10 @@ class PermissionTableSeeder extends Seeder
         Permission::create([
             'name' => 'appointments.store',
             'description' => 'Agendar citas'
+        ]);
+        Permission::create([
+            'name' => 'appointments.board',
+            'description' => 'Ver tablero de citas'
         ]);
         Permission::create([
             'name' => 'appointments.fulfill',
@@ -437,5 +454,10 @@ class PermissionTableSeeder extends Seeder
             'name' => 'dewormings.destroy',
             'description' => ' Eliminar desparasitaciones realizadas'
         ]);
+
+        
+        $permissionsId = Permission::whereIn('name', ['users.index', 'users.permission'])->get('id');
+        $user->permissions()->attach($permissionsId);
+
     }
 }

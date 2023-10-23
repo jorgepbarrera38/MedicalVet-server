@@ -74,6 +74,8 @@ Route::middleware('auth')->group(function () {
     Route::put('appointments/{appointment}/cancel-appointment', 'AppointmentController@cancelAppointment');
     Route::get('appointments/get-data-to-create-appointment', 'AppointmentController@getDataToCreateAppointment');
     Route::get('appointments/get-reason-cancellations', 'AppointmentController@getReasonCancellations');
+
+    Route::get('appointments/get-all-appointments', 'AppointmentBoardController@getAllAppointments');
     
     Route::apiResource('attachment-types', 'AttachmentTypeController');
 
