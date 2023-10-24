@@ -520,7 +520,25 @@ class ClinicHistoryController extends Controller
 
             //Cumpliendo la cita si la escogió
             if ($request->appointment_id) {
-                $appointment->update(['state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id, 'clinic_history_id' => $clinicHistory->id]);
+
+                /*Generando servicio pendiente*/
+                $billingPendingBilling = BillingPendingBilling::create([
+                    'datetime' => now(),
+                    'code' => $appointment->activity->service->code,
+                    'description' => $appointment->activity->service->name,
+                    'product_id' => null,
+                    'service_id' => $appointment->activity->service->id,
+                    'price' => $appointment->activity->service->price,
+                    'quantity' => 1,
+                    'owner_id' => $appointment->pet->owner_id,
+                    'pet_id' => $appointment->pet_id,
+                ]);
+
+                $appointment->update([
+                            'state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id, 
+                            'clinic_history_id' => $clinicHistory->id, 
+                            'billing_pending_billing_id' => $billingPendingBilling->id]);
+                
             }
 
         });

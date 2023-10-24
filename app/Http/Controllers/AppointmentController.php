@@ -128,7 +128,7 @@ class AppointmentController extends Controller
 
         \DB::transaction(function () use ($appointment) {
 
-            /*Generando suministro pendiente*/
+            /*Generando servicio pendiente*/
             $billingPendingBilling = BillingPendingBilling::create([
                 'datetime' => now(),
                 'code' => $appointment->activity->service->code,
