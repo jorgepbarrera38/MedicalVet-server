@@ -63,11 +63,9 @@ class ClinicHistoryController extends Controller
     {
 
         $consultationPurposes = ConsultationPurposes::orderBy('name')->get();
-        $attachmentTypes = AttachmentType::orderBy('name', 'asc')->get();
 
         return [
             'consultationPurposes' => $consultationPurposes,
-            'attachmentTypes' => $attachmentTypes,
         ];
     }
 
@@ -106,6 +104,7 @@ class ClinicHistoryController extends Controller
         $products = Product::where('vaccine', false)->where('deworming', false)->orderBy('name')->get(['id', 'name']);
         $services = Service::orderBy('name')->get(['id', 'name']);
         $dewormings = Product::where('deworming', true)->orderBy('name')->get(['id', 'name']);
+        $attachmentTypes = AttachmentType::orderBy('name', 'asc')->get();
 
 
         $dewormingsCountTotalFromPet = Deworming::where('pet_id', $pet)->count();
@@ -122,6 +121,7 @@ class ClinicHistoryController extends Controller
             'dewormings' => $dewormings,
             'dewormingsCountTotalFromPet' => $dewormingsCountTotalFromPet,
             'vaccinesCountTotalFromPet' => $vaccinesCountTotalFromPet,
+            'attachmentTypes' => $attachmentTypes,
         ];
     }
 
