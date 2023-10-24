@@ -117,7 +117,10 @@ class AppointmentController extends Controller
         }
 
         //Validar que la fecha de la cita sea menor a la fecha y hora actual
-        if ($appointment->date_time_start >= Carbon::now()->format('Y-m-d H:i')) {
+
+        $actualDateTime = Carbon::createFromDate();
+
+        if (Carbon::createFromDate($appointment->date_time_start) >= $actualDateTime->subSecond($actualDateTime->second)) {
             return response()->json(['errors' => ['message' => ['La cita aún no ha iniciado']]], 422);
         }
 
@@ -153,7 +156,10 @@ class AppointmentController extends Controller
         }
 
         //Validar que la fecha de la cita sea menor a la fecha y hora actual
-        if ($appointment->date_time_start >= Carbon::now()->format('Y-m-d H:i')) {
+
+        $actualDateTime = Carbon::createFromDate();
+        
+        if (Carbon::createFromDate($appointment->date_time_start) >= $actualDateTime->subSecond($actualDateTime->second)) {
             return response()->json(['errors' => ['message' => ['La cita aún no ha iniciado']]], 422);
         }
 
