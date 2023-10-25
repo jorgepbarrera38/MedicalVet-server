@@ -13,6 +13,7 @@ class BillingBill extends Model
         'date',
         'number_bill',
         'total',
+        'money_given',
         'cancelled',
         'owner_id',
         'pet_id',

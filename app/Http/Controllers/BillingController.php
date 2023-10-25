@@ -35,17 +35,19 @@ class BillingController extends Controller
     {
         $request->validate([
             'productsAndServicesChecked' => 'required|array',
-            'productsAndServicesChecked.*.id' => 'required|exists:billing_pending_billings,id'
+            'productsAndServicesChecked.*.id' => 'required|exists:billing_pending_billings,id',
+            'moneyGiven' => 'required|numeric|min:0'
         ]);        
 
         \DB::transaction(function () use ($request, $petSelected) {
 
-            $pet = Pet::findOrFail($petSelected);
+           $pet = Pet::findOrFail($petSelected);
 
            $billingBill = BillingBill::create([
                 'date' => now(),
                 'number_bill' => Str::random(40),
                 'total' => 0,
+                'money_given' => 0,
                 'owner_id' => $pet->owner_id,
                 'pet_id' => $pet->id
             ]);
@@ -63,8 +65,6 @@ class BillingController extends Controller
                 if ($billingPendingBilling->billed) {
                     abort(422, 'El pendiente (Id: ' . $billingPendingBilling->id . ' - Descripción: ' . $billingPendingBilling->description . ') ya se encuentra facturado');
                 }
-
-                \Log::info($billingPendingBilling);
 
                 BillingBillDetail::create([
                     'billing_bill_id' => $billingBill->id,
@@ -84,7 +84,11 @@ class BillingController extends Controller
 
             }
 
-            $billingBill->update(['total' => $totalBill]);
+            if ($totalBill > $request->moneyGiven) {
+                abort(422, 'El valor entregado ($' . $request->moneyGiven . ') es inferior al total de la factura ($' . $totalBill . ')');
+            }
+
+            $billingBill->update(['total' => $totalBill, 'money_given' => $request->moneyGiven]);
     
 
         });
