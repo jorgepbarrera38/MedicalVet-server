@@ -569,7 +569,7 @@ class ClinicHistoryController extends Controller
 
         }
 
-        //Validando si la vacuna está relacionada con un registro de pendiente por facturar
+        //Validando si el producto está relacionado con un registro de pendiente por facturar
         $billingPendingBillingId = null;
 
         if ($clinicHistoryProduct->billingPendingBilling) {
@@ -618,18 +618,39 @@ class ClinicHistoryController extends Controller
             }
 
         }
-        //Verifcar que el usuario que intenta actualizar sea el mismo que creó el folio
+
+        //Verificando que tiene relacionado un pendiente por facturar
+        $billingPendingBillingId = null;
+        if ($clinicHistoryProduct->billingPendingBilling) {
+            //Verificando que el pendiente por facturar generado no esté facturado
+            if ($clinicHistoryProduct->billingPendingBilling->billed) {
+                $number_bill = $clinicHistoryProduct->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+                return response()->json(['message' => 'El producto no se puede actualizar ya que se encuentra facturado en la factura No.: ' . $number_bill], 422);
+            }
+
+            //Si el pendiente NO se encuentra facturado se guarda su id para su actualizacion al final
+            $billingPendingBillingId = $clinicHistoryProduct->billingPendingBilling->id;
+        }
+
         $request->validate([
             'quantity' => 'required|numeric|min:1'
         ]);
 
-        //Verifcar que sea del mismo autenticado
-        if (auth()->user()->id == $clinicHistoryProduct->clinicHistory->user_id) {
-            $clinicHistoryProduct->quantity = $request->quantity;
-            $clinicHistoryProduct->save();
-        } else {
+        //Verificando que el usuario que intenta actualizar sea el mismo que creó el folio
+        if (auth()->user()->id != $clinicHistoryProduct->clinicHistory->user_id) {
             return response()->json(['message' => 'Solo el usuario que registró la aplicación puede actualizar'],422);
         }
+
+        \DB::transaction(function () use ($request, $clinicHistoryProduct, $billingPendingBillingId) {
+            $clinicHistoryProduct->quantity = $request->quantity;
+            $clinicHistoryProduct->save();
+
+            if ($billingPendingBillingId) {
+                BillingPendingBilling::findOrFail($billingPendingBillingId)->update(['quantity' => $request->quantity]);
+            }
+
+        });
+
     }
 
     public function deleteServiceApplication(ClinicHistoryService $clinicHistoryService)
@@ -649,7 +670,7 @@ class ClinicHistoryController extends Controller
 
         }
 
-        //Validando si la vacuna está relacionada con un registro de pendiente por facturar
+        //Validando si el producto está relacionado con un registro de pendiente por facturar
         $billingPendingBillingId = null;
 
         if ($clinicHistoryService->billingPendingBilling) {
@@ -657,14 +678,14 @@ class ClinicHistoryController extends Controller
             //Si el pendiente se encuentra facturado
             if ($clinicHistoryService->billingPendingBilling->billed) {
                 $number_bill = $clinicHistoryService->billingPendingBilling->billingBillDetail->billingBill->number_bill;
-                return response()->json(['message' => 'La vacuna no se puede eliminar ya que se encuentra facturada en la factura No.: ' . $number_bill],422);
+                return response()->json(['message' => 'El servicio no se puede eliminar ya que se encuentra facturado en la factura No.: ' . $number_bill],422);
             }
 
             //Si el pendiente NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
             $billingPendingBillingId = $clinicHistoryService->billingPendingBilling->id;
         }
 
-        //Verifcar que el usuario que intenta eliminar sea el mismo que creó el folio
+        //Verificar que el usuario que intenta eliminar sea el mismo que creó el folio
         if (auth()->user()->id != $clinicHistoryService->clinicHistory->user_id) {
             return response()->json(['message' => 'Solo el usuario que registró la aplicación puede eliminarla'],422);
         }
@@ -699,17 +720,37 @@ class ClinicHistoryController extends Controller
 
         }
 
+        //Verificando que tiene relacionado un pendiente por facturar
+        $billingPendingBillingId = null;
+        if ($clinicHistoryService->billingPendingBilling) {
+            //Verificando que el pendiente por facturar generado no esté facturado
+            if ($clinicHistoryService->billingPendingBilling->billed) {
+                $number_bill = $clinicHistoryService->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+                return response()->json(['message' => 'El servicio no se puede actualizar ya que se encuentra facturado en la factura No.: ' . $number_bill], 422);
+            }
+
+            //Si el pendiente NO se encuentra facturado se guarda su id para su actualizacion al final
+            $billingPendingBillingId = $clinicHistoryService->billingPendingBilling->id;
+        }
+
         $request->validate([
             'quantity' => 'required|numeric|min:1'
         ]);
 
         //Verifcar que el usuario que intenta actualizar sea el mismo que creó el folio
-        if (auth()->user()->id == $clinicHistoryService->clinicHistory->user_id) {
-            $clinicHistoryService->quantity = $request->quantity;
-            $clinicHistoryService->save();
-        } else {
+        if (auth()->user()->id != $clinicHistoryService->clinicHistory->user_id) {
             return response()->json(['message' => 'Solo el usuario que registró la aplicación puede actualizar'],422);
         }
+
+        \DB::transaction(function () use ($request, $clinicHistoryService, $billingPendingBillingId) {
+
+            $clinicHistoryService->quantity = $request->quantity;
+            $clinicHistoryService->save();
+
+            if ($billingPendingBillingId) {
+                BillingPendingBilling::findOrFail($billingPendingBillingId)->update(['quantity' => $request->quantity]);
+            }
+        });
     }
 
     public function sendClinicHistoryForEmail (Request $request, Pet $pet) {
