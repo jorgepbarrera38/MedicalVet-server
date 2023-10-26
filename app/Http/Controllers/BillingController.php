@@ -7,6 +7,8 @@ use App\Models\BillingPendingBilling;
 use App\Models\BillingBill;
 use App\Models\BillingBillDetail;
 use App\Models\Pet;
+use App\Models\Product;
+use App\Models\Service;
 use Illuminate\Support\Str;
 
 
@@ -35,12 +37,18 @@ class BillingController extends Controller
     {
         $request->validate([
             'productsAndServicesChecked' => 'required|array',
-            'productsAndServicesChecked.*.id' => 'required|exists:billing_pending_billings,id',
+
+            'productsAndServicesChecked.*.id' => 'required_without_all:productsAndServicesChecked.*.product_id,productsAndServicesChecked.*.service_id|nullable|exists:billing_pending_billings,id',
+            'productsAndServicesChecked.*.product_id' => 'required_without_all:productsAndServicesChecked.*.id,productsAndServicesChecked.*.service_id|nullable|exists:products,id',
+            'productsAndServicesChecked.*.service_id' => 'required_without_all:productsAndServicesChecked.*.id,productsAndServicesChecked.*.product_id|nullable|exists:services,id',
+            'productsAndServicesChecked.*.quantity' => 'required_without_all:productsAndServicesChecked.*.id|nullable|numeric|min:1',
+
             'moneyGiven' => 'required|numeric|min:0'
-        ]);        
+        ]);
 
         \DB::transaction(function () use ($request, $petSelected) {
 
+            /*Creando encabezado de la factura*/
            $pet = Pet::findOrFail($petSelected);
 
            $billingBill = BillingBill::create([
@@ -55,32 +63,70 @@ class BillingController extends Controller
             $totalBill = 0;
             
             foreach ($request->productsAndServicesChecked as $productAndServiceChecked) {
-                $billingPendingBilling = BillingPendingBilling::find($productAndServiceChecked["id"]);
 
-                //Validando que el pendiente por facturar si pertenezca a la mascota
-                if ($billingPendingBilling->pet_id != $petSelected) {
-                    abort(422, 'El pendiente (Id: ' . $billingPendingBilling->id . ' - Descripción: ' . $billingPendingBilling->description . ') no pertenece a la mascota seleccionada');
+                /* 1. El producto-servicio es de un pendiente que ya existía*/
+                if ($productAndServiceChecked["id"]) {
+                    $billingPendingBilling = BillingPendingBilling::find($productAndServiceChecked["id"]);
+    
+                    //Validando que el pendiente por facturar si pertenezca a la mascota
+                    if ($billingPendingBilling->pet_id != $petSelected) {
+                        abort(422, 'El pendiente (Id: ' . $billingPendingBilling->id . ' - Descripción: ' . $billingPendingBilling->description . ') no pertenece a la mascota seleccionada');
+                    }
+    
+                    //Validando que el pendiente por facturar no se encuentre ya facturado
+                    if ($billingPendingBilling->billed) {
+                        abort(422, 'El pendiente (Id: ' . $billingPendingBilling->id . ' - Descripción: ' . $billingPendingBilling->description . ') ya se encuentra facturado');
+                    }
+                    
+                    //Creando detalle de la factura
+                    BillingBillDetail::create([
+                        'billing_bill_id' => $billingBill->id,
+                        'code' => $billingPendingBilling->code,
+                        'description' => $billingPendingBilling->description,
+                        'product_id' => $billingPendingBilling->product_id ? $billingPendingBilling->product_id : null,
+                        'service_id' => $billingPendingBilling->service_id ? $billingPendingBilling->service_id : null,
+                        'price' => $billingPendingBilling->price,
+                        'quantity' => $billingPendingBilling->quantity,
+                        'billing_pending_billing_id' => $billingPendingBilling->id,
+                    ]);
+    
+                    //Actualizando el pendiente por facturar como facturado
+                    $billingPendingBilling->update(['billed' => true]);
+                    /*Calculando total de la factura*/
+                    $totalBill += $billingPendingBilling->price * $billingPendingBilling->quantity;
                 }
 
-                if ($billingPendingBilling->billed) {
-                    abort(422, 'El pendiente (Id: ' . $billingPendingBilling->id . ' - Descripción: ' . $billingPendingBilling->description . ') ya se encuentra facturado');
-                }
+                /* 2. El producto-servicio no es de un pendiente que ya existía (se agregó manualmente)*/
+                if (!$productAndServiceChecked["id"] && ($productAndServiceChecked["product_id"] || $productAndServiceChecked["service_id"])) {
+                    
+                    $productOrService = null;
 
-                BillingBillDetail::create([
-                    'billing_bill_id' => $billingBill->id,
-                    'code' => $billingPendingBilling->code,
-                    'description' => $billingPendingBilling->description,
-                    'product_id' => $billingPendingBilling->product_id ? $billingPendingBilling->product_id : null,
-                    'service_id' => $billingPendingBilling->service_id ? $billingPendingBilling->service_id : null,
-                    'price' => $billingPendingBilling->price,
-                    'quantity' => $billingPendingBilling->quantity,
-                    'billing_pending_billing_id' => $billingPendingBilling->id,
-                ]);
+                    if ($productAndServiceChecked["product_id"]) {
+                        $productOrService = Product::findOrFail($productAndServiceChecked["product_id"]);
+                    }
 
-                $billingPendingBilling->update(['billed' => true]);
+                    if ($productAndServiceChecked["service_id"]) {
+                        $productOrService = Service::findOrFail($productAndServiceChecked["service_id"]);
+                    }
 
-                /*Calculando total de la factura*/
-                $totalBill += $billingPendingBilling->price * $billingPendingBilling->quantity;
+                    //Creando detalle de la factura
+                    BillingBillDetail::create([
+                        'billing_bill_id' => $billingBill->id,
+                        'code' => $productOrService->code,
+                        'description' => $productOrService->name,
+                        'product_id' => $productAndServiceChecked["product_id"] ? $productOrService['id'] : null,
+                        'service_id' => $productAndServiceChecked["service_id"] ? $productOrService['id'] : null,
+                        'price' => $productOrService->price,
+                        'quantity' => $productAndServiceChecked['quantity'],
+                        'billing_pending_billing_id' => null,
+                    ]);
+
+                    //abort(422, );
+
+                    /*Calculando total de la factura*/
+                    $totalBill += $productOrService->price * $productAndServiceChecked['quantity'];
+
+                }                
 
             }
 
@@ -101,9 +147,13 @@ class BillingController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function getProductsAndServices()
     {
-        //
+        $products = Product::select(['id', 'code', 'name', 'price', \DB::raw('"Product" as type')]);
+        $services = Service::select(['id', 'code', 'name', 'price', \DB::raw('"Service" as type')])->union($products)->paginate(9);
+
+        return $services;
+
     }
 
     /**

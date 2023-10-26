@@ -111,6 +111,7 @@ Route::middleware('auth')->group(function () {
     //Facturación
     Route::get('billings/{pet}/get-pending-billing', 'BillingController@getPendingBilling');
     Route::post('billings/{pet}/bill', 'BillingController@bill');
+    Route::get('billings/get-products-and-services', 'BillingController@getProductsAndServices');
 });
 
 Route::group([
