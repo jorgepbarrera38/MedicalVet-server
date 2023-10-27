@@ -18,4 +18,8 @@ class BillingBill extends Model
         'owner_id',
         'pet_id',
     ];
+
+    public function billingBillDetails () {
+        return $this->hasMany('App\Models\BillingBillDetail');
+    }
 }

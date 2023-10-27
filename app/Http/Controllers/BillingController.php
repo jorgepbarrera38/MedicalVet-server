@@ -10,7 +10,7 @@ use App\Models\Pet;
 use App\Models\Product;
 use App\Models\Service;
 use Illuminate\Support\Str;
-
+use Barryvdh\DomPDF\Facade\PDF;
 
 class BillingController extends Controller
 {
@@ -46,7 +46,10 @@ class BillingController extends Controller
             'moneyGiven' => 'required|numeric|min:0'
         ]);
 
-        \DB::transaction(function () use ($request, $petSelected) {
+        //\DB::transaction(function () use ($request, $petSelected) {
+        try {
+        
+        \DB::beginTransaction();
 
             /*Creando encabezado de la factura*/
            $pet = Pet::findOrFail($petSelected);
@@ -136,10 +139,19 @@ class BillingController extends Controller
 
             $billingBill->update(['total' => $totalBill, 'money_given' => $request->moneyGiven]);
     
+        //});
+        \DB::commit();
+        } catch (\Exception $e) {
+            abort(422, $e->getMessage());
+            \DB::rollBack();
+        }
 
-        });
 
-        return 'ok';
+        $billingBill = BillingBill::with('billingBillDetails')->where('id', $billingBill->id)->firstOrFail();
+
+        $pdf = \PDF::loadView('bills.bill', compact('billingBill'));
+        return $pdf->stream('invoice.pdf');
+
 
     }
     /**
