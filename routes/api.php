@@ -112,6 +112,8 @@ Route::middleware('auth')->group(function () {
     Route::get('billings/{pet}/get-pending-billing', 'BillingController@getPendingBilling');
     Route::post('billings/{pet}/bill', 'BillingController@bill');
     Route::get('billings/get-products-and-services', 'BillingController@getProductsAndServices');
+    Route::get('billings/get-all-bills', 'BillingController@getAllBills');
+    Route::post('billings/{billingBill}/cancel-bill', 'BillingController@cancelBill');
 });
 
 Route::group([

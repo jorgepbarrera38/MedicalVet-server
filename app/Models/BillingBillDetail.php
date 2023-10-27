@@ -23,4 +23,8 @@ class BillingBillDetail extends Model
     public function billingBill () {
         return $this->belongsTo('App\Models\BillingBill');
     }
+
+    public function billingPendingBilling () {
+        return $this->belongsTo('App\Models\BillingPendingBilling');
+    }
 }

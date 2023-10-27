@@ -11,6 +11,7 @@ use App\Models\Product;
 use App\Models\Service;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\PDF;
+use Illuminate\Database\Eloquent\Builder;
 
 class BillingController extends Controller
 {
@@ -176,9 +177,44 @@ class BillingController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function getAllBills()
     {
-        //
+        return BillingBill::numberBill(request()->number_bill)
+                ->whereHas('owner', function (Builder $query) {
+                    $query->where('identification', 'like', '%' . request()->identification_or_names_from_owner . '%');
+                })
+                ->with(['billingBillDetails', 'owner'])->orderBy('date', 'desc')->paginate(12);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function cancelBill(BillingBill $billingBill)
+    {
+        if ($billingBill->cancelled) {
+            return response()->json(['message' => 'La factura ya se encuentra anulada'], 422);
+        }
+
+        try {
+            \DB::beginTransaction();
+
+            //Cancelando factura
+            $billingBill->update(['cancelled' => true]);
+
+            //Buscando si el detalle de la factura tiene relación con un registro de pendiente por facturar para pasarlo a (no facturado)
+            foreach ($billingBill->billingBillDetails as $billingBillDetail) {
+                if ($billingBillDetail->billingPendingBilling) {
+                    $billingBillDetail->billingPendingBilling()->update(['billed' => false]);
+                }
+            }
+
+            \DB::commit();
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     /**

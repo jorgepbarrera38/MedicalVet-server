@@ -22,4 +22,14 @@ class BillingBill extends Model
     public function billingBillDetails () {
         return $this->hasMany('App\Models\BillingBillDetail');
     }
+
+    public function owner () {
+        return $this->belongsTo('App\Models\Owner');
+    }
+
+    public function scopeNumberBill ($query, $numberBill) {
+        if ($numberBill) {
+            $query->where('number_bill', 'like', '%' . $numberBill . '%');
+        }
+    }
 }
