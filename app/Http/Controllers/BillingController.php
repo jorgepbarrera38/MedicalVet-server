@@ -149,8 +149,11 @@ class BillingController extends Controller
      */
     public function getProductsAndServices()
     {
-        $products = Product::select(['id', 'code', 'name', 'price', \DB::raw('"Product" as type')]);
-        $services = Service::select(['id', 'code', 'name', 'price', \DB::raw('"Service" as type')])->union($products)->paginate(9);
+        $products = Product::select(['id', 'code', 'name', 'price', \DB::raw('"Product" as type')])
+                                ->where('name', 'like', '%' . request()->q . '%');
+        $services = Service::select(['id', 'code', 'name', 'price', \DB::raw('"Service" as type')])
+                                ->where('name', 'like', '%' . request()->q . '%')
+                                ->union($products)->paginate(9);
 
         return $services;
 
