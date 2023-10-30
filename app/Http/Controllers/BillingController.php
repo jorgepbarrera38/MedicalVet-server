@@ -12,6 +12,8 @@ use App\Models\Service;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\PDF;
 use Illuminate\Database\Eloquent\Builder;
+use Carbon\Carbon;
+use App\Exports\BillsReportExport;
 
 class BillingController extends Controller
 {
@@ -185,7 +187,7 @@ class BillingController extends Controller
                 })
                 ->with(['billingBillDetails', 'owner'])->orderBy('date', 'desc')->paginate(12);
     }
-
+    
     /**
      * Show the form for creating a new resource.
      *
@@ -196,10 +198,10 @@ class BillingController extends Controller
         if ($billingBill->cancelled) {
             return response()->json(['message' => 'La factura ya se encuentra anulada'], 422);
         }
-
+        
         try {
             \DB::beginTransaction();
-
+            
             //Cancelando factura
             $billingBill->update(['cancelled' => true]);
 
@@ -209,12 +211,39 @@ class BillingController extends Controller
                     $billingBillDetail->billingPendingBilling()->update(['billed' => false]);
                 }
             }
-
+            
             \DB::commit();
         } catch (\Exception $e) {
             \DB::rollBack();
             return response()->json(['message' => $e->getMessage()], 422);
         }
+    }
+    
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function billReportGetAllBills(Request $request)
+    {
+        return BillingBill::with(['billingBillDetails', 'owner'])
+                        ->whereBetween('date', [$request->from, Carbon::createFromDate($request->until)->addHour(24)->subMillisecond()])
+                        ->orderBy('date', 'desc')->paginate(12);
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function billReportGetAllBillsToExcel(Request $request)
+    {
+        $bills = BillingBill::with(['billingBillDetails', 'owner'])
+                        ->whereBetween('date', [$request->from, Carbon::createFromDate($request->until)->addHour(24)->subMillisecond()])
+                        ->orderBy('date', 'desc')->get();
+        
+            
+        return \Excel::download(new BillsReportExport($bills), 'bills.xlsx');                    
     }
 
     /**
