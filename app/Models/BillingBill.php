@@ -11,12 +11,15 @@ class BillingBill extends Model
 
     protected $fillable = [
         'date',
+        'prefix',
         'number_bill',
+        'prefix_and_number_bill',
         'total',
         'money_given',
         'cancelled',
         'owner_id',
         'pet_id',
+        'bill_billing_authorization_detail_id',
     ];
 
     public function billingBillDetails () {
@@ -29,7 +32,11 @@ class BillingBill extends Model
 
     public function scopeNumberBill ($query, $numberBill) {
         if ($numberBill) {
-            $query->where('number_bill', 'like', '%' . $numberBill . '%');
+            $query->where('prefix_and_number_bill', 'like', '%' . $numberBill . '%');
         }
+    }
+
+    public function billBillingAuthorizationDetail () {
+        return $this->belongsTo('App\Models\BillBillingAuthorizationDetail');
     }
 }

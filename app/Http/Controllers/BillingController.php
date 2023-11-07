@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\BillingPendingBilling;
 use App\Models\BillingBill;
 use App\Models\BillingBillDetail;
+use App\Models\BillBillingAuthorizationDetail;
 use App\Models\Pet;
 use App\Models\Product;
 use App\Models\Service;
@@ -53,17 +54,44 @@ class BillingController extends Controller
         try {
         
         \DB::beginTransaction();
-
             /*Creando encabezado de la factura*/
+           $billBillingAuthorizationDetail = BillBillingAuthorizationDetail::where('active', true)
+                                                            ->where('initial_date', '<=', now())
+                                                            ->where('final_date', '>=', now())
+                                                            ->first();
+
+           if (!$billBillingAuthorizationDetail) {
+
+               abort(422, 'No tiene resolución de facturación activa');
+           }
+
+           /*Elaborando número de factura*/
+           $numberBill;
+            $lastBill = BillingBill::whereHas('billBillingAuthorizationDetail.billBillingAuthorization', function (Builder $query) use ($billBillingAuthorizationDetail) {
+                                        $query->where('id', $billBillingAuthorizationDetail->billBillingAuthorization->id);
+                                    })->orderBy('id', 'desc')->first();
+            
+            if ($lastBill) {
+                $numberBill = $lastBill->number_bill + 1;                
+            } else {
+                $numberBill = 1;
+            }
+            //abort(422, $numberBill);
+
+           /*Elaborando número de factura*/
            $pet = Pet::findOrFail($petSelected);
+
 
            $billingBill = BillingBill::create([
                 'date' => now(),
-                'number_bill' => Str::random(40),
+                'prefix' => $billBillingAuthorizationDetail->billBillingAuthorization->handles_prefix ? $billBillingAuthorizationDetail->billBillingAuthorization->code : '',
+                'number_bill' => $numberBill,
+                'prefix_and_number_bill' => ($billBillingAuthorizationDetail->billBillingAuthorization->handles_prefix ? $billBillingAuthorizationDetail->billBillingAuthorization->code : '') . $numberBill,
                 'total' => 0,
                 'money_given' => 0,
                 'owner_id' => $pet->owner_id,
-                'pet_id' => $pet->id
+                'pet_id' => $pet->id,
+                'bill_billing_authorization_detail_id' => $billBillingAuthorizationDetail->id,
             ]);
 
             $totalBill = 0;
@@ -153,6 +181,7 @@ class BillingController extends Controller
         $billingBill = BillingBill::with('billingBillDetails')->where('id', $billingBill->id)->firstOrFail();
 
         $pdf = \PDF::loadView('bills.bill', compact('billingBill'));
+        $pdf->setPaper('b7');
         return $pdf->stream('invoice.pdf');
 
 
@@ -244,61 +273,5 @@ class BillingController extends Controller
         
             
         return \Excel::download(new BillsReportExport($bills), 'bills.xlsx');                    
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
     }
 }

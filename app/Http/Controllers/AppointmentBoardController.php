@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Appointment;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class AppointmentBoardController extends Controller
 {
@@ -17,8 +18,11 @@ class AppointmentBoardController extends Controller
      */
     public function getAllAppointments ()
     {
+        $initialDate = Carbon::createFromDate(now()->toDateString());
+        $finalDate = Carbon::createFromDate(now()->toDateString())->addDay()->subMillisecond();
         $appointments = Appointment::with(['pet.owner:id,identification,names,surnames', 'pet:id,name,owner_id', 'activity:id,name', 'consultingroom:id,name'])
                                 ->where('state','PENDIENTE')
+                                ->whereBetween('date_time_start', [$initialDate, $finalDate])
                                 ->select('id', 'pet_id', 'consultingroom_id', 'activity_id', 'date_time_start', 'duration', 'date_time_finish', 'state')
                                 ->orderBy('date_time_start', 'asc')
                             ->get();

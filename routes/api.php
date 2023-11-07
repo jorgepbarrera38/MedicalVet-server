@@ -109,6 +109,13 @@ Route::middleware('auth')->group(function () {
     Route::delete('dewormings/{deworming}', 'DewormingController@destroy');
 
     //Facturación
+    Route::get('bill/billing-authorization', 'BillBillingAuthorizationController@index');
+    Route::post('bill/billing-authorization', 'BillBillingAuthorizationController@store');
+    Route::get('bill/billing-authorization/{billingAuthorization}/edit', 'BillBillingAuthorizationController@edit');
+    Route::post('bill/billing-authorization/{billingAuthorization}/add-detail', 'BillBillingAuthorizationController@addDetail');
+    Route::delete('bill/billing-authorization/delete-detail/{billBillingAuthorizationDetail}', 'BillBillingAuthorizationController@deleteDetail');
+    Route::post('bill/billing-authorization/{billBillingAuthorizationDetail}/update-detail', 'BillBillingAuthorizationController@updateDetail');
+    
     Route::get('billings/{pet}/get-pending-billing', 'BillingController@getPendingBilling');
     Route::post('billings/{pet}/bill', 'BillingController@bill');
     Route::get('billings/get-products-and-services', 'BillingController@getProductsAndServices');
