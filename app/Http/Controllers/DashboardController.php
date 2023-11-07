@@ -9,6 +9,7 @@ use App\Models\Owner;
 use App\Models\Appointment;
 use App\Models\Vaccine;
 use App\Models\Parameter;
+use App\Models\BillingBill;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
 
@@ -50,9 +51,12 @@ class DashboardController extends Controller
                                 ->with('pet:id,name,owner_id')
                                 //->orderBy('nextDate', 'asc')*/
                                 ->get();
+
+        $totalBillCurrentMonth =  BillingBill::where('cancelled', false)->sum('total');
                                     
         return [
             'petsQuantity' => $petsQuantity,
+            'totalBillCurrentMonth' => $totalBillCurrentMonth,
             'ownersQuantity' => $ownersQuantity,
             'clinicHistoriesQuantity' => $clinicHistoriesQuantity,
             'vaccines' => $vaccines,
