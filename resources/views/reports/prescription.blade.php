@@ -55,35 +55,35 @@
             <tr>
                 <th>Propietario:</th>
                 <td colspan="3">
-                {{ $prescription->clinicHistory->pet->owner->identification }} -
-                    {{ $prescription->clinicHistory->pet->owner->names . ' ' .  $prescription->clinicHistory->pet->owner->surnames}}
+                {{ $prescription->pet->owner->identification }} -
+                    {{ $prescription->pet->owner->names . ' ' .  $prescription->pet->owner->surnames}}
                 </td>
             </tr>
             <tr>
                 <th>Mascota:</th>
-                <td>{{ $prescription->clinicHistory->pet->name }}</td>
+                <td>{{ $prescription->pet->name }}</td>
                 <th style="text-align:right">Especie:</th>
-                <td>{{ $prescription->clinicHistory->pet->species->name }}</td>
+                <td>{{ $prescription->pet->species->name }}</td>
             </tr>
             <tr>
                 <th>Raza:</th>
-                <td>{{ $prescription->clinicHistory->pet->race->name }}</td>
+                <td>{{ $prescription->pet->race->name }}</td>
                 <th style="text-align:right">Fecha de nacimiento:</th>
-                <td>{{ $prescription->clinicHistory->pet->date_born }}</td>
+                <td>{{ $prescription->pet->date_born }}</td>
             </tr>
             <tr>
                 <th>Sexo:</th>
-                <td>{{ $prescription->clinicHistory->pet->sex }}</td>
+                <td>{{ $prescription->pet->sex }}</td>
                 <th style="text-align:right">Color:</th>
-                <td>{{ $prescription->clinicHistory->pet->color }}</td>
+                <td>{{ $prescription->pet->color }}</td>
             </tr>
             <tr>  
                 <th>Tamaño:</th>
-                <td colspan="3">{{ $prescription->clinicHistory->pet->size }}</td>
+                <td colspan="3">{{ $prescription->pet->size }}</td>
             </tr>
             <tr>
                 <th>Observaciónes:</th>
-                <td colspan="3" align="justify">{{ $prescription->clinicHistory->pet->observations }}</td>
+                <td colspan="3" align="justify">{{ $prescription->pet->observations }}</td>
             </tr>
         </table>
         
@@ -113,10 +113,10 @@
         @endif
 
         <div style="margin-top:60px">
-            @if ($prescription->clinicHistory->user->signature)
+            @if ($prescription->user->signature)
                 <img src="{{ $prescription->clinicHistory->user->signature }}" width="160" alt="">
             @endif
-            <p>{{ $prescription->clinicHistory->user->identification . ' - ' . $prescription->clinicHistory->user->names . ' ' . $prescription->clinicHistory->user->surnames }}</p>
+            <p>{{ $prescription->user->identification . ' - ' . $prescription->user->names . ' ' . $prescription->user->surnames }}</p>
         </div>
 </body>
 </html>

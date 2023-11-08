@@ -34,6 +34,9 @@ Route::middleware('auth')->group(function () {
     Route::get('clinic-histories/get-data-for-create-folio/{pet}', 'ClinicHistoryController@getDataForCreateFolio');
     Route::get('reports/clinic-history-folios/{payload}', 'ReportController@clinicHistoryFolios');
     Route::apiResource('clinic-histories', 'ClinicHistoryController')->only('store');
+
+    Route::get('prescriptions/get-products', 'PrescriptionController@getProducts');    
+    Route::post('prescriptions/{pet}', 'PrescriptionController@store');    
     
     Route::get('reports/prescriptions/{pet}/get-prescriptions-from-pet', 'ReportController@getPrescriptionsFromPet');
     Route::get('reports/prescriptions/{prescription}/get-prescription-from-pet', 'ReportController@getPrescriptionFromPet');

@@ -11,7 +11,9 @@ class ClinicHistoryPrescription extends Model
 
     protected $fillable = [
         'clinic_history_id',
+        'pet_id',
         'observations',
+        'user_id',
     ];
 
     public function clinicHistoryPrescriptionDetails () {
@@ -20,5 +22,13 @@ class ClinicHistoryPrescription extends Model
 
     public function clinicHistory () {
         return $this->belongsTo('App\Models\ClinicHistory');
+    }
+
+    public function pet () {
+        return $this->belongsTo('App\Models\Pet');
+    }
+
+    public function user () {
+        return $this->belongsTo('App\Models\User');
     }
 }

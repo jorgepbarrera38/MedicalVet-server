@@ -32,9 +32,10 @@ class ReportController extends Controller
     }
 
     public function getPrescriptionsFromPet (Pet $pet) {
-        return ClinicHistoryPrescription::whereHas('clinicHistory.pet', function (Builder $query) use($pet) {
+        return ClinicHistoryPrescription::/*whereHas('clinicHistory.pet', function (Builder $query) use($pet) {
                                                 $query->where('id', $pet->id);
-                                            })
+                                            })*/
+                                            where('pet_id', $pet->id)
                                             ->with('clinicHistory:id,number_folio,created_at')
                                             ->orderBy('created_at', 'desc')
                                             ->get(['id', 'clinic_history_id']);
@@ -54,10 +55,12 @@ class ReportController extends Controller
         $prescription = ClinicHistoryPrescription::whereId($prescription)
                                                 ->with('clinicHistoryPrescriptionDetails.product:id,name')
                                                 ->with('clinicHistoryPrescriptionDetails:id,prescription_id,product_id,quantity,posology')
-                                                ->firstOrFail(['id', 'observations', 'clinic_history_id']);     
+                                                ->with('pet')
+                                                ->firstOrFail(['id', 'observations', 'pet_id', 'user_id', 'clinic_history_id']);     
                         
         $company = Company::first();
 
+        \Log::info($prescription);
         $pdf = \PDF::loadView('reports.prescription', compact('company', 'prescription'));
         return $pdf->stream('invoice.pdf');                        
                 

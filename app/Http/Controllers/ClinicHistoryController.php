@@ -223,7 +223,7 @@ class ClinicHistoryController extends Controller
             'attachments.*.file' => 'required|mimes:pdf|max:10000',
             'products_from_prescription' => 'array',
             'products_from_prescription.*.product_id' => 'required|exists:products,id',
-            'products_from_prescription.*.quantity' => 'required|numeric|min:0.0001|max:1000',
+            'products_from_prescription.*.quantity' => 'required|numeric|min:1|max:1000',
             'products_from_prescription.*.posology' => 'required|max:500',
             'observations_from_prescription' => 'nullable|max:800',
             'indications' => ['max:800', Rule::requiredIf($consultationPurposes->indications)],
@@ -504,7 +504,7 @@ class ClinicHistoryController extends Controller
             //Registro de receta veterinaria
             if ($consultationPurposes->prescription && ($request->observations_from_prescription || collect($request->products_from_prescription)->count())) {
 
-                $clinicHistoryPrescription = $clinicHistory->clinicHistoryPrescription()->create(['observations' => $request->observations_from_prescription]);
+                $clinicHistoryPrescription = $clinicHistory->clinicHistoryPrescription()->create(['pet_id' => $clinicHistory->pet_id ,'observations' => $request->observations_from_prescription, 'user_id' => auth()->user()->id]);
 
                 $productsFromPrescription = collect($request->products_from_prescription)->map(function ($item) {
                     return [
