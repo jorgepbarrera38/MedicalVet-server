@@ -1,5 +1,11 @@
 <?php
 
+Route::get('config-app', function () {
+    return [
+        'APP_URL' => env('APP_URL')
+    ];
+});
+
 Route::middleware('auth')->group(function () {
 
     Route::get('dashboard/get-data', 'DashboardController@getData');
