@@ -43,9 +43,17 @@ class ClinicHistoryController extends Controller
     public function getOwners()
     {
         //return Owner::orderBy('names')->has('pets')->get();
-        return Owner::where('identification', 'like', '%' . request()->q . '%')
-                        ->orWhere('names', 'like', '%' . request()->q . '%')
-                        ->orWhere('surnames', 'like', '%' . request()->q . '%')
+        return Owner::where(function (Builder $query) {
+                            return $query->where('identification', 'like', '%' . request()->q . '%')
+                                                ->orWhere('names', 'like', '%' . request()->q . '%')
+                                                ->orWhere('surnames', 'like', '%' . request()->q . '%');
+                        })                        
+                        /*->with(['pets' => function ($query) {
+                            $query->where('name', 'like', '%' . request()->petSearch . '%');
+                        }])*/
+                        ->whereHas('pets', function (Builder $query) {
+                            $query->where('name', 'like', '%' . request()->petSearch . '%');
+                        })
                         ->with('pets')
                         ->withCount('pets')->orderBy('names')->paginate(9);
     }
