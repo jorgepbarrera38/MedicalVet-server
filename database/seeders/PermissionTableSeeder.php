@@ -456,7 +456,7 @@ class PermissionTableSeeder extends Seeder
         ]);
 
         
-        $permissionsId = Permission::whereIn('name', ['users.index', 'users.permission'])->get('id');
+        $permissionsId = Permission::get('id');
         $user->permissions()->attach($permissionsId);
 
     }
