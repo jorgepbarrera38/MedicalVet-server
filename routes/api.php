@@ -88,6 +88,7 @@ Route::middleware('auth')->group(function () {
     Route::get('appointments/get-reason-cancellations', 'AppointmentController@getReasonCancellations');
 
     Route::get('appointments/get-all-appointments', 'AppointmentBoardController@getAllAppointments');
+    Route::get('appointments/get-appointments-by-date', 'AppointmentBoardController@getAppointmentsByDate');
     
     Route::apiResource('attachment-types', 'AttachmentTypeController');
 
