@@ -35,6 +35,7 @@ class InformedConsentController extends Controller
         $company = Company::first();
 
         $pdf = \PDF::loadView('reports.informedConsent', compact('company', 'template'));
+        $pdf->setPaper('letter');
         return $pdf->stream('invoice.pdf');
     }
 

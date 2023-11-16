@@ -104,6 +104,11 @@ Route::middleware('auth')->group(function () {
     Route::get('informed-consents/get-informed-consents-templates', 'InformedConsentController@getInformedConsentTemplates');
     Route::get('informed-consents/{pet}/{informedConsentTemplate}', 'InformedConsentController@getInformedConsent');
 
+    Route::get('clinic-histories/informed-consents', 'ClinicHistoryInformedConsentController@index');
+    Route::post('clinic-histories/informed-consents/{pet}/', 'ClinicHistoryInformedConsentController@store');
+    Route::delete('clinic-histories/informed-consents/{informedConsent}/', 'ClinicHistoryInformedConsentController@destroy');
+    Route::get('clinic-histories/informed-consents/{informedConsent}/print', 'ClinicHistoryInformedConsentController@print');
+
     //Registrar y eliminar vacunas por fuera de historia clínica
     Route::get('vaccines/{pet}/get-quantity-vaccines-created', 'VaccineController@getQuantityVaccinesCreated');
     Route::get('vaccines', 'VaccineController@index');    
