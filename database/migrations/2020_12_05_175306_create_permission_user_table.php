@@ -3,6 +3,8 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use App\Models\User;
+use App\Models\Permission;
 
 class CreatePermissionUserTable extends Migration
 {
@@ -21,6 +23,11 @@ class CreatePermissionUserTable extends Migration
             $table->foreign('user_id')->references('id')->on('users');
             $table->timestamps();
         });
+
+        $user = User::first();
+        $user->permissions()->detach();        
+        $permissionsId = Permission::get('id');
+        $user->permissions()->attach($permissionsId);
     }
 
     /**
