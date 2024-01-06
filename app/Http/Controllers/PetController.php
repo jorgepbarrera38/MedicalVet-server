@@ -122,6 +122,9 @@ class PetController extends Controller
                     ->with(['servicesApplied' => function ($query) {
                         $query->orderBy('created_at', 'desc');
                     }])
+                    ->with(['records' => function ($query) {
+                        $query->orderBy('created_at', 'desc');
+                    }])
                     ->where('id', $pet)->firstOrFail();
     }
 

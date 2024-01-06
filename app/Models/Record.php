@@ -10,6 +10,7 @@ class Record extends Model
     use HasFactory;
 
     protected $fillable = [
+        'pet_id',
         'description',
         'clinic_history_id'
     ];

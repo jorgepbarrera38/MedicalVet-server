@@ -340,7 +340,10 @@ class ClinicHistoryController extends Controller
 
             //Registro de antecedentes
             if ($consultationPurposes->records && $request->records) {
-                $clinicHistory->records()->createMany($data['records']);
+                $records = collect($data['records'])->map(function ($item) use ($clinicHistory) {
+                    return ['description' => $item['description'], 'pet_id' => $clinicHistory->pet_id];
+                })->toArray();
+                $clinicHistory->records()->createMany($records);
             }
 
 
