@@ -42,4 +42,8 @@ class Pet extends Model
     public function appointments () {
         return $this->hasMany('App\Models\Appointment');
     }
+
+    public function prescriptions () {
+        return $this->hasMany('App\Models\ClinicHistoryPrescription');
+    }
 }

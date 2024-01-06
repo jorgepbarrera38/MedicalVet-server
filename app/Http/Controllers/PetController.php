@@ -10,6 +10,7 @@ use App\Rules\PetIsUniqueFromOwner;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Builder;
 
 class PetController extends Controller
 {
@@ -23,7 +24,13 @@ class PetController extends Controller
 
     public function index()
     {
-        return Pet::where('name', 'like', '%' . request()->search . '%')
+
+        return Pet::whereHas('owner', function (Builder $query) {
+                        $query->where('identification', 'like', '%' . request()->ownerIdOrName . '%')
+                                ->orWhere('names', 'like', '%' . request()->ownerIdOrName . '%')
+                                    ->orWhere('surnames', 'like', '%' . request()->ownerIdOrName . '%');
+                    })
+                    ->where('name', 'like', '%' . request()->petName . '%')
                     ->withCount('clinicHistories')
                     ->with(['owner:id,identification,names,surnames', 'species:id,name', 'race:id,name'])
                     ->orderBy('name', 'asc')
@@ -90,8 +97,16 @@ class PetController extends Controller
         ];
     }
 
-    public function show(Pet $pet) {
-        return $pet;
+    public function show($pet) {
+        return Pet::with(['owner', 'species', 'race', 'appointments.consultingroom', 'appointments.activity'])
+                    ->with(['appointments' => function ($query) {
+                        $query->orderBy('date_time_start', 'desc');
+                    }])
+                    ->with('prescriptions.clinicHistoryPrescriptionDetails.product')
+                    ->with(['prescriptions' => function ($query) {
+                        $query->orderBy('created_at', 'desc');
+                    }])
+                    ->where('id', $pet)->firstOrFail();
     }
 
     /**
