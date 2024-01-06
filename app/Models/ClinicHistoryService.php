@@ -10,6 +10,7 @@ class ClinicHistoryService extends Model
     use HasFactory;
 
     protected $fillable = [
+        'pet_id',
         'service_id',
         'quantity',
         'observations',

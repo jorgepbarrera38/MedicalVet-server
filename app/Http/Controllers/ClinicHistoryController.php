@@ -431,8 +431,9 @@ class ClinicHistoryController extends Controller
 
             //Registro de productos y servicios aplicados
             if ($consultationPurposes->products_and_services_applied) {
-                $productsApplied = collect($request->products)->map(function ($item) {
+                $productsApplied = collect($request->products)->map(function ($item) use($clinicHistory) {
                     return [
+                            'pet_id' => $clinicHistory->pet_id,
                             'product_id' => $item['product_id'],
                             'quantity' => $item['quantity'],
                             'observations' => $item['observations']
@@ -463,8 +464,9 @@ class ClinicHistoryController extends Controller
 
 
 
-                $servicesApplied = collect($request->services)->map(function ($item) {
+                $servicesApplied = collect($request->services)->map(function ($item) use($clinicHistory) {
                     return [
+                            'pet_id' => $clinicHistory->pet_id,
                             'service_id' => $item['service_id'],
                             'observations' => $item['observations'],
                             'quantity' => $item['quantity']

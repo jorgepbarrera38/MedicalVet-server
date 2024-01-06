@@ -46,4 +46,20 @@ class Pet extends Model
     public function prescriptions () {
         return $this->hasMany('App\Models\ClinicHistoryPrescription');
     }
+
+    public function vaccines () {
+        return $this->hasMany('App\Models\Vaccine');
+    }
+
+    public function dewormings () {
+        return $this->hasMany('App\Models\Deworming');
+    }
+
+    public function productsApplied () {
+        return $this->hasMany('App\Models\ClinicHistoryProduct');
+    }
+
+    public function servicesApplied () {
+        return $this->hasMany('App\Models\ClinicHistoryService');
+    }
 }

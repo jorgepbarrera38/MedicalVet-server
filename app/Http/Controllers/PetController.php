@@ -106,6 +106,22 @@ class PetController extends Controller
                     ->with(['prescriptions' => function ($query) {
                         $query->orderBy('created_at', 'desc');
                     }])
+                    ->with('vaccines.product')
+                    ->with(['vaccines' => function ($query) {
+                        $query->orderBy('application_date', 'desc');
+                    }])
+                    ->with('dewormings.product')
+                    ->with(['dewormings' => function ($query) {
+                        $query->orderBy('application_date', 'desc');
+                    }])
+                    ->with('productsApplied.product')
+                    ->with(['productsApplied' => function ($query) {
+                        $query->orderBy('created_at', 'desc');
+                    }])
+                    ->with('servicesApplied.service')
+                    ->with(['servicesApplied' => function ($query) {
+                        $query->orderBy('created_at', 'desc');
+                    }])
                     ->where('id', $pet)->firstOrFail();
     }
 
