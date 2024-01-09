@@ -17,4 +17,8 @@ class ClinicHistoryAttachment extends Model
     public function attachmentType () {
         return $this->belongsTo('App\Models\AttachmentType');
     }
+
+    public function clinicHistory () {
+        return $this->belongsTo('App\Models\ClinicHistory');
+    }
 }

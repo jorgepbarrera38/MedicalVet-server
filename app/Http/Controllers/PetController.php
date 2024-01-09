@@ -6,6 +6,8 @@ use App\Models\Pet;
 use App\Models\Owner;
 use App\Models\Species;
 use App\Models\Race;
+use App\Models\ClinicHistoryAttachment;
+use App\Models\ClinicHistory;
 use App\Rules\PetIsUniqueFromOwner;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -98,7 +100,7 @@ class PetController extends Controller
     }
 
     public function show($pet) {
-        return Pet::with(['owner', 'species', 'race', 'appointments.consultingroom', 'appointments.activity'])
+        $pet = Pet::with(['owner', 'species', 'race', 'appointments.consultingroom', 'appointments.activity'])
                     ->with(['appointments' => function ($query) {
                         $query->orderBy('date_time_start', 'desc');
                     }])
@@ -126,6 +128,19 @@ class PetController extends Controller
                         $query->orderBy('created_at', 'desc');
                     }])
                     ->where('id', $pet)->firstOrFail();
+
+        $clinicHistoryAttachments = ClinicHistoryAttachment::whereHas('clinicHistory', function (Builder $query) use ($pet) {
+                                            $query->where('pet_id', $pet->id);
+                                        })->with('attachmentType')->get();
+        $clinicHistories = ClinicHistory::where('pet_id', $pet->id)
+                                            ->with('consultationPurposes:id,name')
+                                            ->orderBy('number_folio', 'desc')
+                                            ->get(['id', 'number_folio', 'consultation_purposes_id', 'created_at']);
+                    
+        $pet->clinicHistoryAttachments = $clinicHistoryAttachments;
+        $pet->clinicHistories = $clinicHistories;
+                    
+        return $pet;                    
     }
 
     /**
