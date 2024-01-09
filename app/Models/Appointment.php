@@ -25,6 +25,7 @@ class Appointment extends Model
         'reason_cancellation_id',
         'clinic_history_id',
         'billing_pending_billing_id',
+        'clinic_history_service_id',
     ];
 
     public function pet () {

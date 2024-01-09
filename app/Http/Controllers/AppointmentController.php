@@ -10,6 +10,7 @@ use App\Models\Company;
 use App\Models\Appointment;
 use App\Models\ReasonCancellation;
 use App\Models\BillingPendingBilling;
+use App\Models\ClinicHistoryService;
 use \Carbon\Carbon;
 
 class AppointmentController extends Controller
@@ -130,7 +131,7 @@ class AppointmentController extends Controller
         }
 
         \DB::transaction(function () use ($appointment) {
-
+            
             /*Generando servicio pendiente*/
             $billingPendingBilling = BillingPendingBilling::create([
                 'datetime' => now(),
@@ -143,8 +144,20 @@ class AppointmentController extends Controller
                 'owner_id' => $appointment->pet->owner_id,
                 'pet_id' => $appointment->pet_id,
             ]);
+
+            /*Registrando el servicio prestado de la cita en productos y servicios aplicados*/
+            $clinicHistoryService = ClinicHistoryService::create([
+                'pet_id' => $appointment->pet_id,
+                'service_id' => $appointment->activity->service->id,
+                'quantity' => 1,
+                'billing_pending_billing_id' => $billingPendingBilling->id,
+                'user_id' => auth()->user()->id,
+            ]);
+            /*Registrando el servicio prestado de la cita en productos y servicios aplicado*/
             
-            $appointment->update(['state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id, 'billing_pending_billing_id' => $billingPendingBilling->id]);
+            $appointment->update(['state' => 'CUMPLIDA', 
+                                  'user_id_fulfill' => auth()->user()->id, 
+                                  'clinic_history_service_id' => $clinicHistoryService->id]);
         });
     }
 

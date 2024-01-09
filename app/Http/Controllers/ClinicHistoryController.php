@@ -301,18 +301,55 @@ class ClinicHistoryController extends Controller
 
         \DB::transaction(function () use ($data, $request, $consultationPurposes, $appointment) {
 
-            //Registro de historia clínica
+            //Inicio registro de historia clínica
             $clinicHistory = (new ClinicHistory)->fill($data);
-
+            
             $clinicHistoryFromPet = ClinicHistory::where('pet_id', $request->pet_id)->latest()->first();
-
+            
             if ($clinicHistoryFromPet) {
                 $clinicHistory->number_folio = $clinicHistoryFromPet->number_folio + 1;
             } else {
                 $clinicHistory->number_folio = 1;
             }
-
+            
             $clinicHistory->save();
+            //Fin registro de historia clínica
+
+            //Inicio cumpliendo la cita si la escogió
+            if ($request->appointment_id) {
+                
+                /*Generando servicio pendiente*/
+                $billingPendingBilling = BillingPendingBilling::create([
+                    'datetime' => now(),
+                    'code' => $appointment->activity->service->code,
+                    'description' => $appointment->activity->service->name,
+                    'product_id' => null,
+                    'service_id' => $appointment->activity->service->id,
+                    'price' => $appointment->activity->service->price,
+                    'quantity' => 1,
+                    'owner_id' => $appointment->pet->owner_id,
+                    'pet_id' => $appointment->pet_id,
+                ]);
+                /*Generando servicio pendiente*/
+
+                /*Registrando el servicio prestado de la cita en productos y servicios aplicados*/
+                $clinicHistoryService = ClinicHistoryService::create([
+                    'pet_id' => $appointment->pet_id,
+                    'service_id' => $appointment->activity->service->id,
+                    'quantity' => 1,
+                    'billing_pending_billing_id' => $billingPendingBilling->id,
+                    'user_id' => auth()->user()->id,
+                ]);
+                /*Registrando el servicio prestado de la cita en productos y servicios aplicado*/
+                
+                $appointment->update([
+                    'state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id, 
+                    'clinic_history_id' => $clinicHistory->id, 
+                    'clinic_history_service_id' => $clinicHistoryService->id]);
+                    
+            }
+            //Fin cumpliendo la cita si la escogió
+
 
             //Registro de revisión por sistemas
             if ($consultationPurposes->review_by_systems) {
@@ -472,7 +509,8 @@ class ClinicHistoryController extends Controller
                             'pet_id' => $clinicHistory->pet_id,
                             'service_id' => $item['service_id'],
                             'observations' => $item['observations'],
-                            'quantity' => $item['quantity']
+                            'quantity' => $item['quantity'],
+                            'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
 
@@ -529,29 +567,6 @@ class ClinicHistoryController extends Controller
                 })->toArray();
 
                 $clinicHistoryPrescription->clinicHistoryPrescriptionDetails()->createMany($productsFromPrescription);
-            }
-
-            //Cumpliendo la cita si la escogió
-            if ($request->appointment_id) {
-
-                /*Generando servicio pendiente*/
-                $billingPendingBilling = BillingPendingBilling::create([
-                    'datetime' => now(),
-                    'code' => $appointment->activity->service->code,
-                    'description' => $appointment->activity->service->name,
-                    'product_id' => null,
-                    'service_id' => $appointment->activity->service->id,
-                    'price' => $appointment->activity->service->price,
-                    'quantity' => 1,
-                    'owner_id' => $appointment->pet->owner_id,
-                    'pet_id' => $appointment->pet_id,
-                ]);
-
-                $appointment->update([
-                            'state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id, 
-                            'clinic_history_id' => $clinicHistory->id, 
-                            'billing_pending_billing_id' => $billingPendingBilling->id]);
-                
             }
 
         });

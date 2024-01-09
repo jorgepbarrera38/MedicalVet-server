@@ -15,6 +15,7 @@ class ClinicHistoryService extends Model
         'quantity',
         'observations',
         'billing_pending_billing_id',
+        'user_id',
     ];
 
     public function service () {
@@ -24,8 +25,12 @@ class ClinicHistoryService extends Model
     public function clinicHistory () {
         return $this->belongsTo('App\Models\ClinicHistory');
     }
-
+    
     public function billingPendingBilling () {
         return $this->belongsTo('App\Models\BillingPendingBilling');
+    }
+
+    public function user () {
+        return $this->belongsTo('App\Models\User');
     }
 }
