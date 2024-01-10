@@ -25,7 +25,7 @@ class BillingController extends Controller
      */
     public function getPendingBilling(Request $request, $petSelected)
     {
-        $productsAndServices = BillingPendingBilling::where('pet_id', $petSelected)->where('billed', false)->orderBy('id', 'DESC')->get();
+        $productsAndServices = BillingPendingBilling::where('pet_id', $petSelected)->where('billed', false)->orderBy('datetime', 'DESC')->get();
 
         return [
             'productsAndServices' => $productsAndServices,

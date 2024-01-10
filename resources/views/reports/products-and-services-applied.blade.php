@@ -131,7 +131,7 @@
                 <tr>
                     <td>{{ $service->service->name }}</td>
                     <td>{{ $service->quantity }}</td>
-                    <td nowrap>{{ $service->created_at }}</td>
+                    <td nowrap>{{ $service->application_date }}</td>
                     <td>{{ $service->observations }}</td>
                 </tr>
                 @endforeach

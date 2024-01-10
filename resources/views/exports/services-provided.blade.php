@@ -15,7 +15,7 @@
     <tbody>
         @foreach ($services as $service)
             <tr>
-                <td>{{ $service->created_at }}</td>
+                <td>{{ $service->application_date }}</td>
                 <td>{{ $service->service->name }}</td>
                 <td>{{ $service->quantity }}</td>
                 <td>{{ $service->clinicHistory->pet->owner->identification . ' - ' . $service->clinicHistory->pet->owner->names . ' - ' . $service->clinicHistory->pet->owner->surnames }}</td>

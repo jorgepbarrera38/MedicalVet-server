@@ -317,36 +317,9 @@ class ClinicHistoryController extends Controller
 
             //Inicio cumpliendo la cita si la escogió
             if ($request->appointment_id) {
-                
-                /*Generando servicio pendiente*/
-                $billingPendingBilling = BillingPendingBilling::create([
-                    'datetime' => now(),
-                    'code' => $appointment->activity->service->code,
-                    'description' => $appointment->activity->service->name,
-                    'product_id' => null,
-                    'service_id' => $appointment->activity->service->id,
-                    'price' => $appointment->activity->service->price,
-                    'quantity' => 1,
-                    'owner_id' => $appointment->pet->owner_id,
-                    'pet_id' => $appointment->pet_id,
-                ]);
-                /*Generando servicio pendiente*/
-
-                /*Registrando el servicio prestado de la cita en productos y servicios aplicados*/
-                $clinicHistoryService = ClinicHistoryService::create([
-                    'pet_id' => $appointment->pet_id,
-                    'service_id' => $appointment->activity->service->id,
-                    'quantity' => 1,
-                    'billing_pending_billing_id' => $billingPendingBilling->id,
-                    'user_id' => auth()->user()->id,
-                ]);
-                /*Registrando el servicio prestado de la cita en productos y servicios aplicado*/
-                
-                $appointment->update([
-                    'state' => 'CUMPLIDA', 'user_id_fulfill' => auth()->user()->id, 
-                    'clinic_history_id' => $clinicHistory->id, 
-                    'clinic_history_service_id' => $clinicHistoryService->id]);
-                    
+                $appointmentController = new \App\Http\Controllers\AppointmentController;
+                $appointmentController->fulfillAppointment($appointment);
+                $appointment->update(['clinic_history_id' => $clinicHistory->id]);
             }
             //Fin cumpliendo la cita si la escogió
 
@@ -469,7 +442,7 @@ class ClinicHistoryController extends Controller
                 $clinicHistory->dewormings()->createMany($dewormings);
             }
 
-            //Registro de productos y servicios aplicados
+            //Registro de productos aplicados
             if ($consultationPurposes->products_and_services_applied) {
                 $productsApplied = collect($request->products)->map(function ($item) use($clinicHistory) {
                     return [
@@ -503,13 +476,14 @@ class ClinicHistoryController extends Controller
                 $clinicHistory->products()->createMany($productsApplied);
 
 
-
+                //Registro de servicios aplicados
                 $servicesApplied = collect($request->services)->map(function ($item) use($clinicHistory) {
                     return [
                             'pet_id' => $clinicHistory->pet_id,
                             'service_id' => $item['service_id'],
                             'observations' => $item['observations'],
                             'quantity' => $item['quantity'],
+                            'application_date' => now(),
                             'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
@@ -535,6 +509,7 @@ class ClinicHistoryController extends Controller
                 }
 
                 $clinicHistory->services()->createMany($servicesApplied);
+                //Fin registro de servicios aplicados
             }
 
             //Archivos adjuntos

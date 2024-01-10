@@ -51,8 +51,12 @@ Route::middleware('auth')->group(function () {
     Route::get('reports/vaccine/{pet}', 'ReportController@getVaccine');
     Route::get('reports/vaccine/{pet}/export-pdf', 'ReportController@getVaccineInPdf');
     Route::get('reports/vaccine/{pet}/send-vaccines-and-dewormings-for-email', 'ReportController@sendVaccinesAndDewormingsForEmail');
+
+    Route::get('reports/get-data-to-register-products-and-services-applied', 'ReportController@getdataToRegisterProductsAndServicesApplied');
+    Route::post('reports/register-services-applied/{pet}', 'ReportController@registerServicesApplied');
     Route::get('reports/products-and-services-applied/{pet}', 'ReportController@productsAndServicesApplied');
     Route::get('reports/products-and-services-applied/{pet}/export-pdf', 'ReportController@getProductsAndServicesAppliedInPdf');
+
     Route::get('reports/clinic-history/{pet}', 'ReportController@getClinicHistory');
     
     Route::get('clinic-histories/{pet}/send-for-email', 'ClinicHistoryController@sendClinicHistoryForEmail');

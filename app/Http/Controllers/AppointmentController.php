@@ -134,7 +134,7 @@ class AppointmentController extends Controller
             
             /*Generando servicio pendiente*/
             $billingPendingBilling = BillingPendingBilling::create([
-                'datetime' => now(),
+                'datetime' => $appointment->date_time_start,
                 'code' => $appointment->activity->service->code,
                 'description' => $appointment->activity->service->name,
                 'product_id' => null,
@@ -144,12 +144,14 @@ class AppointmentController extends Controller
                 'owner_id' => $appointment->pet->owner_id,
                 'pet_id' => $appointment->pet_id,
             ]);
+            /*Generando servicio pendiente*/
 
             /*Registrando el servicio prestado de la cita en productos y servicios aplicados*/
             $clinicHistoryService = ClinicHistoryService::create([
                 'pet_id' => $appointment->pet_id,
                 'service_id' => $appointment->activity->service->id,
                 'quantity' => 1,
+                'application_date' => $appointment->date_time_start,
                 'billing_pending_billing_id' => $billingPendingBilling->id,
                 'user_id' => auth()->user()->id,
             ]);

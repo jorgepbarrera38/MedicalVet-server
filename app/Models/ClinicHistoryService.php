@@ -14,6 +14,7 @@ class ClinicHistoryService extends Model
         'service_id',
         'quantity',
         'observations',
+        'application_date',
         'billing_pending_billing_id',
         'user_id',
     ];

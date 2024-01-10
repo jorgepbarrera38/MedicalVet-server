@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\Pet;
 use App\Models\Product;
+use App\Models\Service;
 use App\Models\ClinicHistoryPrescription;
 use App\Models\Vaccine;
 use App\Models\Deworming;
 use App\Models\ClinicHistory;
 use App\Models\ClinicHistoryService;
 use App\Models\ClinicHistoryProduct;
+use App\Models\BillingPendingBilling;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\SendClinicHistory;
 use Illuminate\Database\Eloquent\Builder;
@@ -255,14 +257,71 @@ class ReportController extends Controller
         return $pdf->stream('invoice.pdf');
     }
 
+    public function getdataToRegisterProductsAndServicesApplied () {
+        $products = Product::where('vaccine', false)->where('deworming', false)->orderBy('name')->get(['id', 'code', 'name']);
+        $services = Service::orderBy('name')->get(['id', 'code', 'name']);
+
+        return [
+            'products' => $products,
+            'services' => $services,
+        ];
+    }
+
+    public function registerServicesApplied (Request $request, Pet $pet) {
+        $data = $request->validate([
+            'services' => 'array|required',
+            'services.*.service_id' => 'required|exists:services,id',
+            'services.*.quantity' => 'required|integer|min:1|max:1000',
+            'services.*.observations' => 'nullable|max:1500',
+        ], [
+            'services.required' => 'Debe agregar servicios a la lista'
+        ]);
+
+        \DB::transaction(function () use ($request, $pet) {
+            $servicesApplied = collect($request->services)->map(function ($item) use($pet) {
+                return [
+                        'pet_id' => $pet->id,
+                        'service_id' => $item['service_id'],
+                        'observations' => $item['observations'],
+                        'quantity' => $item['quantity'],
+                        'application_date' => now(),
+                        'user_id' => auth()->user()->id,
+                    ];
+            })->toArray();
+    
+            /*Agregando los servicios a pendientes por facturar*/
+            foreach ($servicesApplied as $key => $serviceApplied) {
+                $serviceDB = Service::find($serviceApplied['service_id']);
+    
+                $billingPendingBilling = BillingPendingBilling::create([
+                                            'datetime' => now(),
+                                            'code' => $serviceDB->code,
+                                            'description' => $serviceDB->name,
+                                            'product_id' => null,
+                                            'service_id' => $serviceDB->id,
+                                            'price' => $serviceDB->price,
+                                            'quantity' => $serviceApplied['quantity'],
+                                            'owner_id' => $pet->owner_id,
+                                            'pet_id' => $pet->id,
+                                        ]);
+    
+                $servicesApplied[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
+    
+            }
+    
+            $pet->servicesApplied()->createMany($servicesApplied);
+        });
+
+    }
+
     public function productsAndServicesApplied ($pet) {
         $services = ClinicHistoryService::where('pet_id', $pet)
                                     ->with('service:id,name')
                                     ->with('user')
                                     ->with('clinicHistory:id,number_folio,created_at')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
-                                    ->orderBy('id', 'desc')
-                                    ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'user_id', 'created_at']);
+                                    ->orderBy('application_date', 'desc')
+                                    ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'user_id', 'created_at', 'application_date']);
 
         $products = ClinicHistoryProduct::whereHas('clinicHistory', function (Builder $query) use ($pet) {
                                         $query->where('pet_id', $pet);
@@ -293,8 +352,8 @@ class ReportController extends Controller
                                     /*->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
                                     })*/
-                                    ->orderBy('id', 'desc')
-                                    ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'created_at']);
+                                    ->orderBy('application_date', 'desc')
+                                    ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'created_at', 'application_date']);
 
         $products = ClinicHistoryProduct::whereHas('clinicHistory', function (Builder $query) use ($pet) {
                                         $query->where('pet_id', $pet->id);
@@ -376,7 +435,7 @@ class ReportController extends Controller
                                             ->with('clinicHistory.user:id,identification,names,surnames')
                                             ->with('clinicHistory:id,number_folio,consultation_purposes_id,pet_id,user_id,created_at')
                                             ->with('service:id,name')
-                                            ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'created_at']);
+                                            ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'created_at', 'application_date']);
             
         if (!count($services)) {
             return response()->json(['message' => 'No hay registros'], 422);
@@ -402,7 +461,7 @@ class ReportController extends Controller
                                             ->with('clinicHistory.user:id,identification,names,surnames')
                                             ->with('clinicHistory:id,number_folio,consultation_purposes_id,pet_id,user_id,created_at')
                                             ->with('service:id,name')
-                                            ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'created_at']);
+                                            ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'created_at', 'application_date']);
             
         return \Excel::download(new ServicesProvidedExport($services), 'services.xlsx');
     }
