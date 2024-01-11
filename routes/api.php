@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('reports/get-data-to-register-products-and-services-applied', 'ReportController@getdataToRegisterProductsAndServicesApplied');
     Route::post('reports/register-services-applied/{pet}', 'ReportController@registerServicesApplied');
+    Route::post('reports/register-products-applied/{pet}', 'ReportController@registerProductsApplied');
     Route::get('reports/products-and-services-applied/{pet}', 'ReportController@productsAndServicesApplied');
     Route::get('reports/products-and-services-applied/{pet}/export-pdf', 'ReportController@getProductsAndServicesAppliedInPdf');
 

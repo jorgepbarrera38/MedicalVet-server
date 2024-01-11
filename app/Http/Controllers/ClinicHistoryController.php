@@ -449,7 +449,9 @@ class ClinicHistoryController extends Controller
                             'pet_id' => $clinicHistory->pet_id,
                             'product_id' => $item['product_id'],
                             'quantity' => $item['quantity'],
-                            'observations' => $item['observations']
+                            'observations' => $item['observations'],
+                            'application_date' => now(),
+                            'user_id' => auth()->user()->id,
                         ];
                 })->toArray();
 

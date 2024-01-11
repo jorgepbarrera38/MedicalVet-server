@@ -314,6 +314,54 @@ class ReportController extends Controller
 
     }
 
+    public function registerProductsApplied (Request $request, Pet $pet) {
+        
+        $data = $request->validate([
+            'products' => 'array|required',
+            'products.*.product_id' => 'required|exists:products,id',
+            'products.*.quantity' => 'required|integer|min:1|max:1000',
+            'products.*.observations' => 'nullable|max:1500',
+        ], [
+            'products.required' => 'Debe agregar productos a la lista'
+        ]);
+
+        \DB::transaction(function () use ($request, $pet) {
+            $productsApplied = collect($request->products)->map(function ($item) use($pet) {
+                return [
+                        'pet_id' => $pet->id,
+                        'product_id' => $item['product_id'],
+                        'observations' => $item['observations'],
+                        'quantity' => $item['quantity'],
+                        'application_date' => now(),
+                        'user_id' => auth()->user()->id,
+                    ];
+            })->toArray();
+    
+            /*Agregando los servicios a pendientes por facturar*/
+            foreach ($productsApplied as $key => $productApplied) {
+                $productDB = Product::find($productApplied['product_id']);
+    
+                $billingPendingBilling = BillingPendingBilling::create([
+                                            'datetime' => now(),
+                                            'code' => $productDB->code,
+                                            'description' => $productDB->name,
+                                            'product_id' => $productDB->id,
+                                            'service_id' => null,
+                                            'price' => $productDB->price,
+                                            'quantity' => $productApplied['quantity'],
+                                            'owner_id' => $pet->owner_id,
+                                            'pet_id' => $pet->id,
+                                        ]);
+    
+                $productsApplied[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
+    
+            }
+    
+            $pet->productsApplied()->createMany($productsApplied);
+        });
+
+    }
+
     public function productsAndServicesApplied ($pet) {
         $services = ClinicHistoryService::where('pet_id', $pet)
                                     ->with('service:id,name')
@@ -323,17 +371,16 @@ class ReportController extends Controller
                                     ->orderBy('application_date', 'desc')
                                     ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'user_id', 'created_at', 'application_date']);
 
-        $products = ClinicHistoryProduct::whereHas('clinicHistory', function (Builder $query) use ($pet) {
-                                        $query->where('pet_id', $pet);
-                                    })
+        $products = ClinicHistoryProduct::where('pet_id', $pet)
                                     ->with('product:id,name')
+                                    ->with('user')
                                     ->with('clinicHistory:id,number_folio,created_at,user_id')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
                                     /*->whereHas('clinicHistory', function (Builder $query) {
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
                                     })*/
                                     ->orderBy('id', 'desc')
-                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations']);   
+                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations', 'user_id', 'application_date']);   
                                     
         return [
             'services' => $services,
@@ -355,9 +402,7 @@ class ReportController extends Controller
                                     ->orderBy('application_date', 'desc')
                                     ->get(['id', 'clinic_history_id', 'service_id', 'quantity', 'observations', 'created_at', 'application_date']);
 
-        $products = ClinicHistoryProduct::whereHas('clinicHistory', function (Builder $query) use ($pet) {
-                                        $query->where('pet_id', $pet->id);
-                                    })
+        $products = ClinicHistoryProduct::where('pet_id', $pet->id)
                                     ->with('product:id,name')
                                     ->with('clinicHistory:id,number_folio,created_at,user_id')
                                     ->with('clinicHistory.user:id,identification,username,names,surnames')
@@ -365,7 +410,7 @@ class ReportController extends Controller
                                         $query->whereBetween('created_at', [ request()->dateSince, \Carbon\Carbon::create(request()->dateUntil)->addHours(24)->subMillisecond(1) ]);
                                     })*/
                                     ->orderBy('id', 'desc')
-                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations']);   
+                                    ->get(['id', 'clinic_history_id', 'product_id', 'quantity', 'observations', 'application_date']);   
                                     
         $company = Company::first();
 

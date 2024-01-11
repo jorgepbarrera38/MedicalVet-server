@@ -105,7 +105,7 @@
                 <tr>
                     <td>{{ $product->product->name }}</td>
                     <td>{{ $product->quantity }}</td>
-                    <td nowrap>{{ $product->clinicHistory->created_at }}</td>
+                    <td nowrap>{{ $product->application_date }}</td>
                     <td>{{ $product->observations }}</td>
                 </tr>
                 @endforeach

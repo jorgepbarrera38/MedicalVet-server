@@ -14,7 +14,9 @@ class ClinicHistoryProduct extends Model
         'product_id',
         'quantity',
         'observations',
-        'billing_pending_billing_id'
+        'application_date',
+        'billing_pending_billing_id',
+        'user_id'
     ];
 
     public function product () {
@@ -27,5 +29,9 @@ class ClinicHistoryProduct extends Model
 
     public function billingPendingBilling () {
         return $this->belongsTo('App\Models\BillingPendingBilling');
+    }
+
+    public function user () {
+        return $this->belongsTo('App\Models\User');
     }
 }
