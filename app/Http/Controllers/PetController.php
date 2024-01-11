@@ -127,6 +127,10 @@ class PetController extends Controller
                     ->with(['records' => function ($query) {
                         $query->orderBy('created_at', 'desc');
                     }])
+                    ->with('diagnoses.diagnosis')
+                    ->with(['diagnoses' => function ($query) {
+                        $query->orderBy('created_at', 'desc');
+                    }])
                     ->where('id', $pet)->firstOrFail();
 
         $clinicHistoryAttachments = ClinicHistoryAttachment::whereHas('clinicHistory', function (Builder $query) use ($pet) {

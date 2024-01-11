@@ -364,8 +364,8 @@ class ClinicHistoryController extends Controller
 
             //Registro de diagnósticos
             if ($consultationPurposes->diagnoses) {
-                $diagnoses = collect($request->diagnoses)->map(function ($item) {
-                    return ['diagnosis_id' => $item['diagnosis_id'], 'type' => $item['type']];
+                $diagnoses = collect($request->diagnoses)->map(function ($item) use($clinicHistory) {
+                    return ['pet_id' => $clinicHistory->pet_id, 'diagnosis_id' => $item['diagnosis_id'], 'type' => $item['type']];
                 })->toArray();
 
                 $clinicHistory->diagnoses()->createMany($diagnoses);

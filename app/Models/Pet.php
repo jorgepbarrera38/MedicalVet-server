@@ -66,4 +66,8 @@ class Pet extends Model
     public function records () {
         return $this->hasMany('App\Models\Record');
     }
+
+    public function diagnoses () {
+        return $this->hasMany('App\Models\ClinicHistoryDiagnosis');
+    }
 }

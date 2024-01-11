@@ -10,6 +10,7 @@ class ClinicHistoryDiagnosis extends Model
     use HasFactory;
 
     protected $fillable = [
+        'pet_id',
         'diagnosis_id',
         'type',
     ];
