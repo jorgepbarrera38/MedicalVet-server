@@ -9,6 +9,7 @@ use App\Models\Race;
 use App\Models\ClinicHistoryAttachment;
 use App\Models\ClinicHistory;
 use App\Rules\PetIsUniqueFromOwner;
+use App\Models\Hospitalization;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
@@ -140,6 +141,10 @@ class PetController extends Controller
                                             ->with('consultationPurposes:id,name')
                                             ->orderBy('number_folio', 'desc')
                                             ->get(['id', 'number_folio', 'consultation_purposes_id', 'created_at']);
+
+        /*Inicio verificando si la mascota ya se encuentra hospitalizada*/
+        $pet->hospitalization = Hospitalization::where('pet_id', $pet->id)->where('status', 'active')->with('service')->first();        
+        /*Fin verificando si la mascota ya se encuentra hospitalizada*/
                     
         $pet->clinicHistoryAttachments = $clinicHistoryAttachments;
         $pet->clinicHistories = $clinicHistories;

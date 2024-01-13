@@ -143,7 +143,12 @@ Route::middleware('auth')->group(function () {
     Route::post('billings/{billingBill}/cancel-bill', 'BillingController@cancelBill');
 
     Route::get('billings/bill-report/get-all-bills', 'BillingController@billReportGetAllBills');
-    Route::get('billings/bill-report/get-all-bills-to-excel', 'BillingController@billReportGetAllBillsToExcel');
+    Route::get('billings/bill-report/get-all-bills', 'BillingController@billReportGetAllBills');
+
+    Route::get('hospitalizations/get-data-to-hospitalize-pet', 'HospitalizationController@getDataToHospitalizePet');
+    Route::post('hospitalizations/{pet}/hospitalize-pet', 'HospitalizationController@hospitalizePet');
+    Route::put('hospitalizations/{pet}/update-hospitalization-from-pet', 'HospitalizationController@updateHospitalizationFromPet');
+    Route::post('hospitalizations/{pet}/finalize-hospitalization', 'HospitalizationController@finalizeHospitalization');
 });
 
 Route::group([
