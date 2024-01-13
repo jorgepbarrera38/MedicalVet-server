@@ -150,33 +150,32 @@ class DewormingController extends Controller
      */
     public function destroy(Deworming $deworming)
     {
+        //Validando si el pendiente por facturar está facturado
         $billingPendingBillingId = null;
-        //Validando si el desparasitante está relacionada con un registro de pendientes por facturar
-        if ($deworming->billingPendingBilling) {
-            //Validando que el registro pendiente por facturar no se encuentre facturado
-            //Si el pendiente se encuentra facturado
-            if ($deworming->billingPendingBilling->billed) {
-                $number_bill = $deworming->billingPendingBilling->billingBillDetail->billingBill->number_bill;
-                return response()->json(['El desparasitante no se puede eliminar ya que se encuentra facturado en la factura No.: ' . $number_bill], 422);
-            }
 
-            //Si el pendiente NO se encuentra facturado, se guarda su id para su eliminación al final por integridad referencial
-            $billingPendingBillingId = $deworming->billingPendingBilling->id;
-        }
-        
-        if (auth()->user()->id != $deworming->user_id) {
-            return response()->json(['Solo puede eliminar sus propios registros'], 403);
+        //Verificando que el producto no esté facturado
+        if ($deworming->clinicHistoryProduct->billingPendingBilling->billed) {
+
+            $number_bill = $deworming->clinicHistoryProduct->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+            return response()->json(['La desparasitación no se puede eliminar ya que se encuentra facturada en la factura No.: ' . $number_bill], 422);
+
         }
 
-        \DB::transaction(function () use ($deworming, $billingPendingBillingId) {
+        //Si el producto NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
+        $clinicHistoryProductId = $deworming->clinicHistoryProduct->id;
+        $billingPendingBillingId = $deworming->clinicHistoryProduct->billingPendingBilling->id;
 
+        \DB::transaction(function () use ($deworming, $clinicHistoryProductId, $billingPendingBillingId) {
+
+            //Eliminando vacuna
             $deworming->delete();
 
-            //Se verifica si se encontró un pendiente y se elimina
-            if ($billingPendingBillingId) {
-                BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
-            }
-            
+            //Eliminando producto aplicado
+            ClinicHistoryProduct::findOrFail($clinicHistoryProductId)->delete();
+
+            //Eliminando el pendiente por facturar
+            BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
+
         });
 
         return response()->json(['message' => 'Deworming deleted'], 200);

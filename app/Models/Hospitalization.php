@@ -28,4 +28,8 @@ class Hospitalization extends Model
     public function service () {
         return $this->belongsTo('App\Models\Service');
     }
+
+    public function clinicHistoryService () {
+        return $this->belongsTo('App\Models\ClinicHistoryService');
+    }
 }

@@ -30,4 +30,8 @@ class Deworming extends Model
     public function user () {
         return $this->belongsTo('App\Models\User');
     }
+
+    public function clinicHistoryProduct () {
+        return $this->belongsTo('App\Models\ClinicHistoryProduct');
+    }
 }

@@ -149,6 +149,7 @@ Route::middleware('auth')->group(function () {
     Route::post('hospitalizations/{pet}/hospitalize-pet', 'HospitalizationController@hospitalizePet');
     Route::put('hospitalizations/{pet}/update-hospitalization-from-pet', 'HospitalizationController@updateHospitalizationFromPet');
     Route::post('hospitalizations/{pet}/finalize-hospitalization', 'HospitalizationController@finalizeHospitalization');
+    Route::delete('hospitalizations/{hospitalization}/delete', 'HospitalizationController@destroy');
 });
 
 Route::group([

@@ -34,4 +34,8 @@ class Vaccine extends Model
     public function pet () {
         return $this->belongsTo('App\Models\Pet');
     }
+
+    public function clinicHistoryProduct () {
+        return $this->belongsTo('App\Models\ClinicHistoryProduct');
+    }
 }

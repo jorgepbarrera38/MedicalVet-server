@@ -234,10 +234,11 @@ class BillingController extends Controller
             //Cancelando factura
             $billingBill->update(['cancelled' => true]);
 
-            //Buscando si el detalle de la factura tiene relación con un registro de pendiente por facturar para pasarlo a (no facturado)
+            //Buscando si el detalle de la factura tiene relación con un registro de pendiente por facturar para pasarlo a (no facturado) y eliminar la relación
             foreach ($billingBill->billingBillDetails as $billingBillDetail) {
                 if ($billingBillDetail->billingPendingBilling) {
                     $billingBillDetail->billingPendingBilling()->update(['billed' => false]);
+                    $billingBillDetail->update(['billing_pending_billing_id' => null]);
                 }
             }
             

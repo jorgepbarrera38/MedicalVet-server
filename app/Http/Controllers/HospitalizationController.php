@@ -163,7 +163,38 @@ class HospitalizationController extends Controller
             ]);
             /*Actualizando datos de la hospitalización*/
         });
+    }
+
+    public function destroy (Hospitalization $hospitalization) {
+        //Validando si el pendiente por facturar está facturado
+        $billingPendingBillingId = null;
+
+        //Verificando que el producto no esté facturado
+        if ($hospitalization->clinicHistoryService->billingPendingBilling->billed) {
+
+            $number_bill = $hospitalization->clinicHistoryService->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+            return response()->json(['El registro de hospitalización no se puede eliminar ya que se encuentra facturado en la factura No.: ' . $number_bill], 422);
+
+        }
+
+        //Si el producto NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
+        $clinicHistoryServiceId = $hospitalization->clinicHistoryService->id;
+        $billingPendingBillingId = $hospitalization->clinicHistoryService->billingPendingBilling->id;
+
+        \DB::transaction(function () use ($hospitalization, $clinicHistoryServiceId, $billingPendingBillingId) {
+
+            //Eliminando hospitalización
+            $hospitalization->delete();
+
+            //Eliminando servicio aplicado
+            ClinicHistoryService::findOrFail($clinicHistoryServiceId)->delete();
+
+            //Eliminando el pendiente por facturar
+            BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
 
 
+        });
+
+        return response()->json(['message' => 'Hospitalization deleted'], 200);
     }
 }

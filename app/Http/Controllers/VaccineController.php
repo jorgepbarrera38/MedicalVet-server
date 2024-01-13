@@ -172,33 +172,31 @@ class VaccineController extends Controller
      */
     public function destroy(Vaccine $vaccine)
     {
-        //Validando si la vacuna está relacionada con un registro de pendiente por facturar
+        //Validando si el pendiente por facturar está facturado
         $billingPendingBillingId = null;
-        
-        if ($vaccine->billingPendingBilling) {
-            //Validando que el registro pendiente por facturar no se encuentre facturado
-            //Si el pendiente se encuentra facturado
-            if ($vaccine->billingPendingBilling->billed) {
-                $number_bill = $vaccine->billingPendingBilling->billingBillDetail->billingBill->number_bill;
-                return response()->json(['La vacuna no se puede eliminar ya que se encuentra facturada en la factura No.: ' . $number_bill], 422);
-            }
 
-            //Si el pendiente NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
-            $billingPendingBillingId = $vaccine->billingPendingBilling->id;
+        //Verificando que el producto no esté facturado
+        if ($vaccine->clinicHistoryProduct->billingPendingBilling->billed) {
+
+            $number_bill = $vaccine->clinicHistoryProduct->billingPendingBilling->billingBillDetail->billingBill->number_bill;
+            return response()->json(['La vacuna no se puede eliminar ya que se encuentra facturada en la factura No.: ' . $number_bill], 422);
+
         }
 
-        if (auth()->user()->id != $vaccine->user_id) {
-            return response()->json(['Solo puede eliminar sus propios registros'], 403);
-        }
+        //Si el producto NO se encuentra facturado y se guarda su id para su eliminación al final por integridad referencial
+        $clinicHistoryProductId = $vaccine->clinicHistoryProduct->id;
+        $billingPendingBillingId = $vaccine->clinicHistoryProduct->billingPendingBilling->id;
 
-        \DB::transaction(function () use ($vaccine, $billingPendingBillingId) {
+        \DB::transaction(function () use ($vaccine, $clinicHistoryProductId, $billingPendingBillingId) {
 
+            //Eliminando vacuna
             $vaccine->delete();
 
-            //Se verifica si se encontró un pendiente y se elimina
-            if ($billingPendingBillingId) {
-                BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
-            }
+            //Eliminando producto aplicado
+            ClinicHistoryProduct::findOrFail($clinicHistoryProductId)->delete();
+
+            //Eliminando el pendiente por facturar
+            BillingPendingBilling::findOrFail($billingPendingBillingId)->delete();
 
         });
 
