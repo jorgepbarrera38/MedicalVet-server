@@ -145,7 +145,9 @@ class PetController extends Controller
         /*Inicio verificando si la mascota ya se encuentra hospitalizada*/
         $pet->hospitalization = Hospitalization::where('pet_id', $pet->id)->where('status', 'active')->with('service')->first();        
         /*Fin verificando si la mascota ya se encuentra hospitalizada*/
-                    
+        
+        $pet->hospitalizations = Hospitalization::where('pet_id', $pet->id)->where('status', 'finished')->with('service')->orderBy('initial_date', 'desc')->get();        
+
         $pet->clinicHistoryAttachments = $clinicHistoryAttachments;
         $pet->clinicHistories = $clinicHistories;
                     
