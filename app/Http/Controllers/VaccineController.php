@@ -6,6 +6,7 @@ use App\Models\Product;
 use App\Models\Vaccine;
 use App\Models\Pet;
 use App\Models\BillingPendingBilling;
+use App\Models\ClinicHistoryProduct;
 use Illuminate\Http\Request;
 
 class VaccineController extends Controller
@@ -70,6 +71,7 @@ class VaccineController extends Controller
             $productDB = Product::find($data['product_id']);
             $petDB = Pet::find($data['pet_id']);
 
+            /*Registrando el pendiente por facturar*/
             $billingPendingBilling = BillingPendingBilling::create([
                 'datetime' => now(),
                 'code' => $productDB->code,
@@ -81,10 +83,23 @@ class VaccineController extends Controller
                 'owner_id' => $petDB->owner_id,
                 'pet_id' => $petDB->id,
             ]);
+            /*Registrando el pendiente por facturar*/
 
-            $data['billing_pending_billing_id'] = $billingPendingBilling->id;
+            /*Registrando el producto aplicado en productos y servicios aplicados*/
+            $clinicHistoryProduct = ClinicHistoryProduct::create([
+                'pet_id' => $petDB->id,
+                'product_id' => $productDB->id,
+                'quantity' => 1,
+                'application_date' => $data['application_date'],
+                'billing_pending_billing_id' => $billingPendingBilling->id,
+                'user_id' => auth()->user()->id,
+            ]);
+            /*Registrando el producto aplicado en productos y servicios aplicados*/
+
+            $data['clinic_history_product_id'] = $clinicHistoryProduct->id;
 
             auth()->user()->vaccines()->create($data);
+
         });
 
 
