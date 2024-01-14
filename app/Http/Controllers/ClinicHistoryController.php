@@ -388,6 +388,7 @@ class ClinicHistoryController extends Controller
                 foreach ($vaccines as $key => $vaccine) {
                     $productDB = Product::find($vaccine['product_id']);
 
+                    /*Registrando el pendiente por facturar*/
                     $billingPendingBilling = BillingPendingBilling::create([
                     'datetime' => now(),
                     'code' => $productDB->code,
@@ -399,8 +400,20 @@ class ClinicHistoryController extends Controller
                     'owner_id' => $clinicHistory->pet->owner_id,
                     'pet_id' => $clinicHistory->pet_id,
                     ]);
+                    /*Registrando el pendiente por facturar*/
 
-                    $vaccines[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
+                    /*Registrando el producto aplicado en productos y servicios aplicados*/
+                    $clinicHistoryProduct = ClinicHistoryProduct::create([
+                        'pet_id' => $clinicHistory->pet_id,
+                        'product_id' => $productDB->id,
+                        'quantity' => 1,
+                        'application_date' => $vaccine['application_date'],
+                        'billing_pending_billing_id' => $billingPendingBilling->id,
+                        'user_id' => auth()->user()->id,
+                    ]);
+                    /*Registrando el producto aplicado en productos y servicios aplicados*/
+
+                    $vaccines[$key]['clinic_history_product_id'] = $clinicHistoryProduct->id;
                 }
 
                 //Registrando las vacunas en la tabla de vacunas realizadas
@@ -420,23 +433,35 @@ class ClinicHistoryController extends Controller
                         ];
                 })->toArray();
 
-                /*Agregando los desparasitantes a "pendientes por facturar"*/
                 foreach ($dewormings as $key => $deworming) {
                     $productDB = Product::find($deworming['product_id']);
-
+                    
+                    /*Agregando los desparasitantes a "pendientes por facturar"*/
                     $billingPendingBilling = BillingPendingBilling::create([
-                    'datetime' => now(),
-                    'code' => $productDB->code,
-                    'description' => $productDB->name,
-                    'product_id' => $productDB->id,
-                    'service_id' => null,
-                    'price' => $productDB->price,
-                    'quantity' => 1,
-                    'owner_id' => $clinicHistory->pet->owner_id,
-                    'pet_id' => $clinicHistory->pet_id,
+                        'datetime' => now(),
+                        'code' => $productDB->code,
+                        'description' => $productDB->name,
+                        'product_id' => $productDB->id,
+                        'service_id' => null,
+                        'price' => $productDB->price,
+                        'quantity' => 1,
+                        'owner_id' => $clinicHistory->pet->owner_id,
+                        'pet_id' => $clinicHistory->pet_id,
                     ]);
+                    /*Registrando el pendiente por facturar*/
 
-                    $dewormings[$key]['billing_pending_billing_id'] = $billingPendingBilling->id;
+                    /*Registrando el producto aplicado en productos y servicios aplicados*/
+                    $clinicHistoryProduct = ClinicHistoryProduct::create([
+                        'pet_id' => $clinicHistory->pet_id,
+                        'product_id' => $productDB->id,
+                        'quantity' => 1,
+                        'application_date' => $deworming['application_date'],
+                        'billing_pending_billing_id' => $billingPendingBilling->id,
+                        'user_id' => auth()->user()->id,
+                    ]);
+                    /*Registrando el producto aplicado en productos y servicios aplicados*/
+
+                    $dewormings[$key]['clinic_history_product_id'] = $clinicHistoryProduct->id;
                 }
 
                 $clinicHistory->dewormings()->createMany($dewormings);
