@@ -36,6 +36,11 @@ class PetController extends Controller
                     ->where('name', 'like', '%' . request()->petName . '%')
                     ->withCount('clinicHistories')
                     ->with(['owner:id,identification,names,surnames', 'species:id,name', 'race:id,name'])
+                    ->when(request()->showOnlyHospitalizedPets == 'true', function ($query) {
+                        $query->whereHas('hospitalizations', function (Builder $query) {
+                            $query->where('status', 'active');
+                        });
+                    })
                     ->orderBy('name', 'asc')
                     ->paginate(7);
     }
