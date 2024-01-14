@@ -41,6 +41,9 @@ class PetController extends Controller
                             $query->where('status', 'active');
                         });
                     })
+                    ->with(['hospitalizations' => function ($query) {
+                        $query->where('status', 'active');
+                    }])
                     ->orderBy('name', 'asc')
                     ->paginate(7);
     }
