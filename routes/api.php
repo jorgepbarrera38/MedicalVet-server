@@ -1,8 +1,13 @@
 <?php
 
+use App\Models\Company;
+
 Route::get('config-app', function () {
+
+    $company = Company::first();
     return [
-        'APP_URL' => env('APP_URL')
+        'APP_URL' => env('APP_URL'),
+        'APP_LOGO' => $company ? $company->logo : null,
     ];
 });
 
