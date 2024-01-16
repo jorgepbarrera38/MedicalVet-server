@@ -28,6 +28,11 @@ class AddTutorialsDataToTutorialsTable extends Migration
             'title' => '3. Hospitalizacion de mascotas en Medical Vet',
             'url' => 'https://www.youtube.com/watch?v=g3SmjZXXbx0&list=PLzVSZrD1VbwGSqo6wyRMxktDf-vHri8Pm&index=3',
         ]);
+
+        Tutorial::create([
+            'title' => '4. Generar recetas veterinarias en Medical Vet',
+            'url' => 'https://www.youtube.com/watch?v=283zAoleJVU&list=PLzVSZrD1VbwGSqo6wyRMxktDf-vHri8Pm&index=4',
+        ]);
     }
 
     /**
