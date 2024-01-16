@@ -12,6 +12,7 @@ use App\Models\Parameter;
 use App\Models\BillingBill;
 use Illuminate\Database\Eloquent\Builder;
 use Carbon\Carbon;
+use App\Models\Tutorial;
 
 class DashboardController extends Controller
 {
@@ -53,6 +54,7 @@ class DashboardController extends Controller
                                 ->get();
 
         $totalBillCurrentMonth =  BillingBill::where('cancelled', false)->sum('total');
+        $tutorials = Tutorial::orderBy('id', 'asc')->get();
                                     
         return [
             'petsQuantity' => $petsQuantity,
@@ -62,6 +64,7 @@ class DashboardController extends Controller
             'vaccines' => $vaccines,
             'appointmentsQuantity' => $appointmentsQuantity,
             'daysAlertVaccines' => $daysAlertVaccines,
+            'tutorials' => $tutorials,
         ];
     }
 }
